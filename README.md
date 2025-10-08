@@ -1,10 +1,8 @@
-# 🔔 AlertFrame
+# AlertFrame
 
-> Never miss a change on any website. Point, click, get notified.
+A visual website monitoring tool for tracking changes on any website.
 
-![AlertFrame Banner](https://via.placeholder.com/800x200/000000/FFFFFF?text=AlertFrame+-+Website+Change+Monitoring)
-
-## 📖 Table of Contents
+## Table of Contents
 
 - [What is AlertFrame?](#what-is-alertframe)
 - [Key Features](#key-features)
@@ -19,46 +17,46 @@
 
 ---
 
-## 🎯 What is AlertFrame?
+## What is AlertFrame?
 
-AlertFrame is a **visual website monitoring tool** that lets you track changes on any website without writing a single line of code. Simply point to what you want to monitor, and get instant notifications when it changes.
+AlertFrame is a visual website monitoring tool that lets you track changes on any website without writing code. Point to what you want to monitor and receive notifications when it changes.
 
-### Perfect For:
+### Use Cases:
 
-✅ **E-commerce** - Track competitor prices, product availability
-✅ **Job Hunting** - Monitor new job postings on career pages
-✅ **News** - Get alerted when specific articles or headlines change
-✅ **Real Estate** - Track property listings and price changes
-✅ **Finance** - Monitor stock prices, crypto values
-✅ **Social Media** - Watch follower counts, engagement metrics
-✅ **Business** - Track competitor announcements, product launches
+- **E-commerce** - Track competitor prices and product availability
+- **Job Hunting** - Monitor new job postings on career pages
+- **News** - Get alerted when specific articles or headlines change
+- **Real Estate** - Track property listings and price changes
+- **Finance** - Monitor stock prices and cryptocurrency values
+- **Social Media** - Watch follower counts and engagement metrics
+- **Business** - Track competitor announcements and product launches
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🎨 Visual Element Selection
+### Visual Element Selection
 - Click any element on any website to monitor it
 - No CSS selectors or HTML knowledge required
 - Visual highlighting shows exactly what you're tracking
 
-### 🧠 Smart Change Detection
+### Smart Change Detection
 - Automatically detects content changes
-- Compares text, HTML, and even list item counts
+- Compares text, HTML, and list item counts
 - Intelligent diff algorithm shows exactly what changed
 
-### 📧 Multi-Channel Notifications
+### Multi-Channel Notifications
 - **Email** - Professional notifications via Resend
 - **Slack** - Direct messages to your workspace (coming soon)
 - **Discord** - Webhook notifications (coming soon)
 
-### ⚡ Flexible Scheduling
+### Flexible Scheduling
 - Check every 1 minute (for testing)
 - Every 2, 5, 10 minutes
 - Hourly, daily, or weekly
 - Custom intervals
 
-### 📊 Dashboard Management
+### Dashboard Management
 - View all your alerts in one place
 - See change history and statistics
 - Pause/resume alerts
@@ -66,7 +64,7 @@ AlertFrame is a **visual website monitoring tool** that lets you track changes o
 
 ---
 
-## 🔄 How It Works
+## How It Works
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -95,7 +93,7 @@ AlertFrame is a **visual website monitoring tool** that lets you track changes o
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -137,7 +135,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## ⚙️ Environment Setup
+## Environment Setup
 
 ### Required Variables
 
@@ -173,27 +171,25 @@ CHROME_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Ch
 
 ### Getting API Keys
 
-#### 1. **Database (Supabase)** - FREE
-- Go to [supabase.com](https://supabase.com)
-- Create new project
-- Go to Settings → Database → Connection String
+#### 1. Database (Supabase)
+- Create new project on Supabase
+- Navigate to Settings → Database → Connection String
 - Copy "Session Pooler" connection string
 - Paste as `DATABASE_URL`
 
-#### 2. **Email (Resend)** - FREE (100 emails/day)
-- Go to [resend.com](https://resend.com)
-- Sign up for free account
+#### 2. Email (Resend)
+- Sign up for Resend account
 - Create API key
 - Copy key and paste as `RESEND_API_KEY`
 - Use `EMAIL_FROM="onboarding@resend.dev"` for testing
 
 ---
 
-## 💻 Running Locally
+## Running Locally
 
-### Start Both Servers (Required!)
+### Start Both Servers (Required)
 
-AlertFrame requires **TWO processes** running simultaneously:
+AlertFrame requires two processes running simultaneously:
 
 #### Terminal 1: Development Server
 ```bash
@@ -215,7 +211,7 @@ This starts:
 - Detects changes and sends notifications
 - Logs all activity to console
 
-**⚠️ IMPORTANT:** Both must be running for alerts to work!
+**Important:** Both must be running for alerts to work.
 
 ### Verify It's Working
 
@@ -227,9 +223,9 @@ This starts:
 
 2. **Worker Running:**
    ```
-   🚀 Alert Worker Starting...
-   ✅ Worker scheduled and ready
-   ⏰ Running alert check...
+   Alert Worker Starting...
+   Worker scheduled and ready
+   Running alert check...
    ```
 
 3. **Test Alert Creation:**
@@ -243,7 +239,7 @@ This starts:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 alert-system/
@@ -279,7 +275,7 @@ alert-system/
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Next.js 15** - React framework with App Router
@@ -309,11 +305,11 @@ alert-system/
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-#### ❌ "Alerts not being sent"
+#### "Alerts not being sent"
 
 **Symptom:** Created alert but no emails received
 
@@ -337,14 +333,14 @@ alert-system/
 
 5. **Check terminal logs:**
    ```
-   ✅ Email notification sent successfully
+   Email notification sent successfully
    # or
-   ❌ Failed to send email: [error details]
+   Failed to send email: [error details]
    ```
 
 ---
 
-#### ❌ "Invalid frequency" showing in dashboard
+#### "Invalid frequency" showing in dashboard
 
 **Symptom:** Dashboard shows "INVALID FREQUENCY" instead of "Every 2 minutes"
 
@@ -360,7 +356,7 @@ npm run worker # Terminal 2
 
 ---
 
-#### ❌ "Worker cannot connect to API"
+#### "Worker cannot connect to API"
 
 **Symptom:** Worker shows connection errors
 
@@ -371,7 +367,7 @@ npm run worker # Terminal 2
 
 ---
 
-#### ❌ "Database connection failed"
+#### "Database connection failed"
 
 **Symptom:** Errors mentioning Prisma or database
 
@@ -391,7 +387,7 @@ npx prisma db push
 
 ---
 
-#### ❌ "Port 3000 already in use"
+#### "Port 3000 already in use"
 
 **Solution:**
 ```bash
@@ -441,7 +437,7 @@ Use websites that change often for testing:
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Deploy to Vercel (Recommended)
 
@@ -481,7 +477,7 @@ The project includes `vercel.json` for automatic cron jobs:
 
 ---
 
-## 📚 Additional Documentation
+## Additional Documentation
 
 - [HOW_TO_RUN.md](./HOW_TO_RUN.md) - Detailed step-by-step guide
 - [EMAIL_EXPLAINED.md](./EMAIL_EXPLAINED.md) - How email system works
@@ -490,7 +486,7 @@ The project includes `vercel.json` for automatic cron jobs:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please:
 
@@ -502,21 +498,13 @@ Contributions are welcome! Please:
 
 ---
 
-## 📄 License
+## License
 
 MIT License - feel free to use for personal or commercial projects.
 
 ---
 
-## 🆘 Support
-
-- **Issues:** [GitHub Issues](https://github.com/anthropics/claude-code/issues)
-- **Email:** support@alertframe.com
-- **Twitter:** [@alertframe](https://twitter.com/alertframe)
-
----
-
-## 🎉 Quick Start Checklist
+## Quick Start Checklist
 
 Before creating your first alert:
 
@@ -530,8 +518,8 @@ Before creating your first alert:
 - [ ] Browser open at `http://localhost:3000`
 - [ ] Worker showing logs every minute
 
-**All checked?** You're ready to create your first alert! 🚀
+**All checked?** You're ready to create your first alert.
 
 ---
 
-**Built with ❤️ using Next.js, Prisma, and Puppeteer**
+**Built using Next.js, Prisma, and Puppeteer**
