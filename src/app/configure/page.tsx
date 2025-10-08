@@ -1,0 +1,249 @@
+'use client';
+
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { ArrowLeft, Check, Loader2, Bell, Mail, Clock } from 'lucide-react';
+
+function ConfigureContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const url = searchParams.get('url') || '';
+  const selector = searchParams.get('selector') || '';
+  const elementType = searchParams.get('elementType') || 'single';
+  const itemCount = parseInt(searchParams.get('itemCount') || '0');
+
+  const [title, setTitle] = useState('');
+  const [frequencyMinutes, setFrequencyMinutes] = useState(600);
+  const [frequencyLabel, setFrequencyLabel] = useState('Every 10 hours');
+  const [notifyEmail, setNotifyEmail] = useState(true);
+  const [email, setEmail] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreating(true);
+
+    try {
+      const response = await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url,
+          cssSelector: selector,
+          elementType,
+          title: title || `Monitor ${new URL(url).hostname}`,
+          frequencyMinutes,
+          frequencyLabel,
+          notifyEmail,
+          email,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        router.push(`/dashboard?created=${data.id}`);
+      } else {
+        alert('Failed to create alert. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating alert:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA]">
+      {/* Header */}
+      <header className="bg-white border-b-[3px] border-black">
+        <div className="px-6 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.back()}
+                className="flex items-center gap-1.5 px-3 py-1 border-[2px] border-black bg-white hover:bg-black hover:text-white transition-colors text-[12px] font-bold uppercase"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back
+              </button>
+              <div className="h-5 w-[2px] bg-black" />
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wide opacity-60">Configure Alert</p>
+                <p className="font-bold text-[12px] truncate max-w-md" title={url}>
+                  {url}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-2xl mx-auto px-6 py-12">
+        <div className="bg-white border-[3px] border-black p-8">
+          <div className="flex items-center gap-3 mb-8">
+            <Bell className="w-7 h-7" />
+            <h1 className="text-[32px] font-black uppercase">Configure Alert</h1>
+          </div>
+
+          <form onSubmit={handleCreate} className="space-y-6">
+            {/* Selection Summary */}
+            <div className="p-4 bg-[#F5F5F5] border-[2px] border-black">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wide opacity-60 mb-1">
+                    Selected Element
+                  </p>
+                  <code className="text-[12px] font-mono font-medium">
+                    {selector}
+                  </code>
+                </div>
+                {elementType === 'list' && (
+                  <span className="px-3 py-1.5 bg-[#00FF00] border-[2px] border-black text-[11px] font-bold uppercase">
+                    {itemCount} items
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Title */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wide opacity-60 mb-2">
+                Alert Name (Optional)
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., YC Fall 2025 Companies"
+                className="w-full px-4 py-3 border-[3px] border-black bg-white focus:outline-none focus:shadow-[4px_4px_0_0_#000] transition-shadow text-[14px] font-medium"
+              />
+            </div>
+
+            {/* Check Frequency */}
+            <div>
+              <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide opacity-60 mb-2">
+                <Clock className="w-4 h-4" />
+                Check Frequency
+              </label>
+              <select
+                value={frequencyMinutes}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  setFrequencyMinutes(value);
+                  // Set label based on selected option
+                  const selectedOption = e.target.options[e.target.selectedIndex];
+                  setFrequencyLabel(selectedOption.text);
+                }}
+                className="w-full px-4 py-3 border-[3px] border-black bg-white focus:outline-none focus:shadow-[4px_4px_0_0_#000] transition-shadow text-[14px] font-bold uppercase cursor-pointer hover:bg-[#F5F5F5] appearance-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23000000' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                  paddingRight: '3rem'
+                }}
+              >
+                <optgroup label="Minutes" className="font-bold">
+                  <option value="1">Every 1 minute</option>
+                  <option value="2">Every 2 minutes</option>
+                  <option value="5">Every 5 minutes</option>
+                  <option value="10">Every 10 minutes</option>
+                  <option value="20">Every 20 minutes</option>
+                  <option value="30">Every 30 minutes</option>
+                </optgroup>
+                <optgroup label="Hours" className="font-bold">
+                  <option value="60">Every hour</option>
+                  <option value="360">Every 6 hours</option>
+                  <option value="600">Every 10 hours</option>
+                  <option value="1440">Daily</option>
+                  <option value="10080">Weekly</option>
+                </optgroup>
+              </select>
+              <p className="mt-2 text-[11px] font-bold opacity-60">
+                How often should we check for changes?
+              </p>
+            </div>
+
+            {/* Email Notification */}
+            <div>
+              <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide opacity-60 mb-3">
+                <Mail className="w-4 h-4" />
+                Notification Settings
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 p-4 border-[2px] border-black cursor-pointer hover:bg-[#F5F5F5] transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={notifyEmail}
+                    onChange={(e) => setNotifyEmail(e.target.checked)}
+                    className="w-5 h-5 accent-black"
+                  />
+                  <div className="flex-1">
+                    <p className="font-bold text-[13px] uppercase">Email Notifications</p>
+                    <p className="text-[11px] font-bold opacity-60">
+                      Get notified via email when changes are detected
+                    </p>
+                  </div>
+                </label>
+
+                {notifyEmail && (
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required={notifyEmail}
+                    className="w-full px-4 py-3 border-[3px] border-black bg-white focus:outline-none focus:shadow-[4px_4px_0_0_#000] transition-shadow text-[14px] font-medium"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6 border-t-[2px] border-black">
+              <button
+                type="submit"
+                disabled={isCreating || (notifyEmail && !email)}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-black text-white font-bold uppercase text-[14px] border-[3px] border-black hover:bg-[#FFE500] hover:text-black disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                {isCreating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Creating Alert...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-5 h-5" />
+                    Create Alert
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Info Box */}
+        <div className="mt-6 p-4 bg-[#FFE500] border-[3px] border-black">
+          <p className="text-[13px] font-bold">
+            <strong className="uppercase">What happens next?</strong> We'll check your selected element{' '}
+            {frequencyLabel.toLowerCase()} and alert you when things change.
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default function ConfigurePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </div>
+    }>
+      <ConfigureContent />
+    </Suspense>
+  );
+}
