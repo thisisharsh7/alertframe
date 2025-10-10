@@ -4,8 +4,7 @@ import { nanoid } from 'nanoid';
 import { sendAlertCreatedNotification } from '@/lib/email';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
-import puppeteer from 'puppeteer';
-import * as cheerio from 'cheerio';
+import { scrapeElement } from '@/lib/scraper';
 
 // GET /api/alerts - List all alerts for authenticated user
 export async function GET() {
@@ -160,40 +159,24 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to take initial snapshot
+// Uses the centralized scrapeElement function which handles both local and Vercel environments
 async function takeSnapshot(alertId: string, url: string, cssSelector: string) {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  // Use the existing scrapeElement function from scraper.ts
+  // This automatically handles Vercel serverless and local environments
+  const result = await scrapeElement(url, cssSelector);
 
-  try {
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
-    const html = await page.content();
-    await browser.close();
-
-    // Extract the selected element
-    const $ = cheerio.load(html);
-    const element = $(cssSelector);
-
-    if (element.length > 0) {
-      const htmlContent = element.html() || '';
-      const textContent = element.text() || '';
-      const itemCount = element.children().length > 2 ? element.children().length : null;
-
-      await prisma.snapshots.create({
-        data: {
-          id: `snap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          alertId,
-          htmlContent,
-          textContent,
-          itemCount,
-        },
-      });
-    }
-  } catch (error) {
-    console.error('Snapshot error:', error);
-    await browser.close();
-    throw error;
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to scrape element');
   }
+
+  // Create snapshot with scraped data
+  await prisma.snapshots.create({
+    data: {
+      id: `snap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      alertId,
+      htmlContent: result.htmlContent,
+      textContent: result.textContent,
+      itemCount: result.itemCount,
+    },
+  });
 }

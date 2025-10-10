@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
           // Vercel serverless configuration
           args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
           defaultViewport: { width: 1280, height: 800 },
-          executablePath: await chromium.executablePath('/tmp/.cache/puppeteer'),
+          executablePath: await chromium.executablePath(),
           headless: true,
         }
       : {
