@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer';
-import puppeteerCore from 'puppeteer-core';
+import chromium from '@sparticuz/chromium'; // v137 - Stable version for Vercel serverless
+import puppeteer from 'puppeteer'; // v23 - For local development
+import puppeteerCore from 'puppeteer-core'; // v24.10 - Matches Chromium 137 for Vercel
 
 export interface ScrapeResult {
   htmlContent: string;
@@ -29,9 +29,11 @@ export async function scrapeElement(
     // Configure Puppeteer based on environment
     const launchOptions = isProduction && isVercel
       ? {
-          // Vercel serverless configuration
+          // Vercel serverless configuration with @sparticuz/chromium v137
           args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
           defaultViewport: { width: 1280, height: 800 },
+          // IMPORTANT: Call executablePath() without arguments
+          // The full package includes Chromium and manages extraction automatically
           executablePath: await chromium.executablePath(),
           headless: true,
         }
