@@ -1,4 +1,34 @@
 {
-  "_comment": "Vercel cron disabled - using cron-job.org for free minute-level precision",
-  "crons": []
+  "_comment": "Cron Configuration: Choose ONE option below",
+
+  "crons": [{
+    "path": "/api/cron/check-alerts",
+    "schedule": "*/10 * * * *"
+  }],
+
+  "_cron_notes": [
+    "OPTION A (Default): Vercel Cron - Built-in, runs every 10 minutes",
+    "- Automatically includes x-vercel-cron header for auth",
+    "- Free tier: 1 cron job limit, 1 invocation per minute max",
+    "- Schedule format: standard cron syntax",
+    "",
+    "OPTION B (Alternative): cron-job.org - Free external service",
+    "- Supports 1-minute precision for free",
+    "- More flexible scheduling options",
+    "- Requires Authorization header: Bearer YOUR_CRON_SECRET",
+    "- To use: Set crons: [] above and configure at cron-job.org",
+    "- URL: https://your-app.vercel.app/api/cron/check-alerts"
+  ],
+
+  "functions": {
+    "src/app/api/cron/check-alerts/route.ts": {
+      "maxDuration": 300
+    }
+  },
+
+  "_functions_notes": [
+    "maxDuration: 300 seconds (5 minutes) for scraping operations",
+    "Hobby plan limit: 10 seconds (upgrade for longer)",
+    "Pro plan: up to 300 seconds"
+  ]
 }

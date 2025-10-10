@@ -153,19 +153,19 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
       {/* Header */}
       <header className="border-b-[3px] border-black bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 py-3">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 group cursor-pointer" onClick={() => router.push('/')}>
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12">
+            <div className="flex items-center gap-1 sm:gap-1.5 group cursor-pointer" onClick={() => router.push('/')}>
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-[28px] sm:h-[28px] transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12">
                 <path d="M14 4C11 4 9 6 9 9V13L7 17H21L19 13V9C19 6 17 4 14 4Z" fill="#FFE500" stroke="#000000" strokeWidth="2.5" strokeLinejoin="round"/>
                 <path d="M12 17V18C12 19.1 12.9 20 14 20C15.1 20 16 19.1 16 18V17" stroke="#000000" strokeWidth="2.5" strokeLinecap="round"/>
                 <circle cx="19" cy="7.5" r="3" fill="#FF3366" stroke="#000000" strokeWidth="2"/>
               </svg>
-              <span className="text-[21px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
+              <span className="text-[18px] sm:text-[21px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
             </div>
             <button
               onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
             >
               Dashboard
             </button>
@@ -174,34 +174,34 @@ export default function SettingsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[900px] mx-auto px-6 py-12 flex-1">
-        <h1 className="text-[48px] font-black uppercase tracking-tight mb-8">Settings</h1>
+      <main className="max-w-[900px] mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-1">
+        <h1 className="text-[36px] sm:text-[42px] md:text-[48px] font-black uppercase tracking-tight mb-6 sm:mb-8">Settings</h1>
 
         {/* Account Section */}
-        <section className="border-[3px] border-black bg-white p-6 mb-6">
-          <h2 className="text-[24px] font-black uppercase mb-4 tracking-tight">Account</h2>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <p className="text-[12px] font-bold uppercase tracking-wide opacity-60 mb-1">Email</p>
-              <p className="text-[16px] font-bold">{session?.user?.email}</p>
+        <section className="border-[3px] border-black bg-white p-5 sm:p-6 mb-5 sm:mb-6">
+          <h2 className="text-[20px] sm:text-[24px] font-black uppercase mb-4 tracking-tight">Account</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide opacity-60 mb-1">Email</p>
+              <p className="text-[15px] sm:text-[16px] font-bold truncate">{session?.user?.email}</p>
             </div>
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-[#FF3366] text-[#FF3366] bg-white hover:bg-[#FF3366] hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              className="px-4 py-2 text-[12px] sm:text-[13px] font-bold uppercase tracking-wide border-[3px] border-[#FF3366] text-[#FF3366] bg-white hover:bg-[#FF3366] hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] whitespace-nowrap"
             >
               Sign Out
             </button>
           </div>
 
           {/* Danger Zone */}
-          <div className="border-t-[3px] border-[#FF3366] pt-6">
-            <h3 className="text-[16px] font-black uppercase mb-2 tracking-tight text-[#FF3366]">Danger Zone</h3>
+          <div className="border-t-[3px] border-[#FF3366] pt-5 sm:pt-6">
+            <h3 className="text-[15px] sm:text-[16px] font-black uppercase mb-2 tracking-tight text-[#FF3366]">Danger Zone</h3>
             <p className="text-[13px] font-medium mb-4 leading-relaxed opacity-80">
               Once you delete your account, there is no going back. All your alerts, changes, and data will be permanently deleted.
             </p>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-[#FF3366] text-[#FF3366] bg-white hover:bg-[#FF3366] hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              className="px-4 py-2 text-[12px] sm:text-[13px] font-bold uppercase tracking-wide border-[3px] border-[#FF3366] text-[#FF3366] bg-white hover:bg-[#FF3366] hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
             >
               Delete Account
             </button>
@@ -209,10 +209,10 @@ export default function SettingsPage() {
         </section>
 
         {/* Gmail OAuth Section */}
-        <section className="border-[3px] border-black bg-white p-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[100px] h-[100px] bg-[#FFE500] opacity-20"></div>
-          <h2 className="text-[24px] font-black uppercase mb-2 tracking-tight relative z-10">Email Notifications</h2>
-          <p className="text-[14px] font-medium mb-6 leading-relaxed opacity-80 relative z-10">
+        <section className="border-[3px] border-black bg-white p-5 sm:p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] bg-[#FFE500] opacity-20"></div>
+          <h2 className="text-[20px] sm:text-[24px] font-black uppercase mb-2 tracking-tight relative z-10">Email Notifications</h2>
+          <p className="text-[13px] sm:text-[14px] font-medium mb-5 sm:mb-6 leading-relaxed opacity-80 relative z-10">
             Connect your Gmail account to send email notifications from your own
             email address. This gives you 500 free emails per day!
           </p>
@@ -241,9 +241,9 @@ export default function SettingsPage() {
             {gmailStatus.connected ? (
               <div className="space-y-4">
                 {/* Connected Status */}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className="w-10 h-10 bg-[#00FF00] border-[3px] border-black flex items-center justify-center flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#00FF00] border-[3px] border-black flex items-center justify-center flex-shrink-0">
                       <svg
                         className="w-5 h-5"
                         fill="none"
@@ -367,9 +367,9 @@ export default function SettingsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-[3px] border-black mt-auto py-3 bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 text-center">
-          <p className="text-[12px] font-bold uppercase tracking-wide opacity-60">
+      <footer className="border-t-[3px] border-black mt-auto py-2.5 sm:py-3 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 text-center">
+          <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide opacity-60">
             © 2025 AlertFrame
           </p>
         </div>
@@ -378,7 +378,7 @@ export default function SettingsPage() {
       {/* Delete Account Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white border-[4px] border-[#FF3366] max-w-md w-full p-6 relative">
+          <div className="bg-white border-[4px] border-[#FF3366] max-w-md w-full p-5 sm:p-6 relative">
             {/* Warning Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 bg-[#FF3366] border-[3px] border-black flex items-center justify-center">

@@ -50,20 +50,20 @@ export default function Home() {
 
       {/* Header */}
       <header className="border-b-[3px] border-black bg-white relative z-10">
-        <div className="max-w-[1400px] mx-auto px-6 py-3">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 group cursor-pointer">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12">
+            <div className="flex items-center gap-1 sm:gap-1.5 group cursor-pointer">
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-[28px] sm:h-[28px] transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12">
                 <path d="M14 4C11 4 9 6 9 9V13L7 17H21L19 13V9C19 6 17 4 14 4Z" fill="#FFE500" stroke="#000000" strokeWidth="2.5" strokeLinejoin="round"/>
                 <path d="M12 17V18C12 19.1 12.9 20 14 20C15.1 20 16 19.1 16 18V17" stroke="#000000" strokeWidth="2.5" strokeLinecap="round"/>
                 <circle cx="19" cy="7.5" r="3" fill="#FF3366" stroke="#000000" strokeWidth="2"/>
               </svg>
-              <span className="text-[21px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
+              <span className="text-[17px] sm:text-[21px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
             </div>
             {session ? (
               <button
                 onClick={() => router.push('/dashboard')}
-                className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
               >
                 Dashboard
               </button>
@@ -76,7 +76,7 @@ export default function Home() {
                   }, 0);
                 }}
                 disabled={isSigningIn}
-                className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSigningIn ? 'Signing In...' : 'Sign In'}
               </button>
@@ -86,10 +86,10 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <main className="max-w-[1200px] mx-auto px-6 py-24 relative z-10 flex-1">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24 relative z-10 flex-1">
         <div className="max-w-[900px] mx-auto relative">
           {/* Background Illustration - Browser Window Mockup */}
-          <div className="absolute right-[-80px] top-[80px] opacity-[0.06] pointer-events-none hidden xl:block">
+          <div className="absolute right-[-80px] top-[80px] opacity-[0.12] pointer-events-none hidden xl:block">
             <svg width="380" height="280" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* Browser Window */}
               <rect x="10" y="10" width="380" height="280" fill="#FFFFFF" stroke="#000000" strokeWidth="4"/>
@@ -116,16 +116,16 @@ export default function Home() {
           </div>
 
           {/* Main Heading */}
-          <div className="mb-12">
-            <h1 className="text-[72px] leading-[1.1] font-black tracking-tight mb-6 uppercase">
+          <div className="mb-8 sm:mb-10 md:mb-12">
+            <h1 className="text-[48px] sm:text-[56px] md:text-[64px] lg:text-[72px] leading-[1.1] font-black tracking-tight mb-4 sm:mb-6 uppercase">
               Never Miss
               <span className="block mt-2">A Change</span>
               <span className="block mt-2 relative inline-block">
                 <span className="relative z-10">On Any Website</span>
-                <span className="absolute bottom-2 left-0 w-full h-[20px] bg-[#FFE500] -z-10"></span>
+                <span className="absolute bottom-1 sm:bottom-2 left-0 w-full h-[12px] sm:h-[16px] md:h-[20px] bg-[#FFE500] -z-10"></span>
               </span>
             </h1>
-            <p className="text-[21px] leading-[1.6] font-medium max-w-[640px]">
+            <p className="text-[17px] sm:text-[19px] md:text-[21px] leading-[1.6] font-medium max-w-[640px]">
               Track what matters on any website. Get instant alerts when things change.
             </p>
           </div>
@@ -154,26 +154,26 @@ export default function Home() {
           </form>
 
           {/* Example URLs */}
-          <div className="mb-24">
-            <div className="text-[14px] font-bold uppercase tracking-wide mb-4 opacity-60">
+          <div className="mb-16 sm:mb-20 md:mb-24">
+            <div className="text-[13px] sm:text-[14px] font-bold uppercase tracking-wide mb-3 sm:mb-4 opacity-60">
               Try Examples:
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <button
                 onClick={() => setUrl('https://www.ycombinator.com/companies?batch=Fall%202025')}
-                className="px-4 py-2 text-[13px] font-bold border-[2px] border-black bg-white hover:bg-[#00FF00] transition-colors duration-200"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[13px] font-bold border-[2px] border-black bg-white hover:bg-[#00FF00] transition-colors duration-200"
               >
                 YC Companies
               </button>
               <button
                 onClick={() => setUrl('https://news.ycombinator.com/')}
-                className="px-4 py-2 text-[13px] font-bold border-[2px] border-black bg-white hover:bg-[#00FF00] transition-colors duration-200"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[13px] font-bold border-[2px] border-black bg-white hover:bg-[#00FF00] transition-colors duration-200"
               >
                 Hacker News
               </button>
               <button
                 onClick={() => setUrl('https://github.com/trending')}
-                className="px-4 py-2 text-[13px] font-bold border-[2px] border-black bg-white hover:bg-[#00FF00] transition-colors duration-200"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[13px] font-bold border-[2px] border-black bg-white hover:bg-[#00FF00] transition-colors duration-200"
               >
                 GitHub Trending
               </button>
@@ -181,38 +181,38 @@ export default function Home() {
           </div>
 
           {/* Features */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="border-[3px] border-black bg-white p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-[60px] h-[60px] bg-[#FFE500] opacity-40"></div>
-              <svg className="w-[56px] h-[56px] mb-6 relative z-10" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="border-[3px] border-black bg-white p-6 sm:p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[50px] h-[50px] sm:w-[60px] sm:h-[60px] bg-[#FFE500] opacity-40"></div>
+              <svg className="w-[48px] h-[48px] sm:w-[56px] sm:h-[56px] mb-4 sm:mb-6 relative z-10" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="28" cy="28" r="24" stroke="#000000" strokeWidth="3"/>
                 <circle cx="28" cy="28" r="10" fill="#000000"/>
               </svg>
-              <h3 className="text-[20px] font-black uppercase mb-3 leading-tight">Visual Selection</h3>
-              <p className="text-[16px] leading-[1.6] font-medium opacity-80">
+              <h3 className="text-[18px] sm:text-[20px] font-black uppercase mb-2 sm:mb-3 leading-tight">Visual Selection</h3>
+              <p className="text-[15px] sm:text-[16px] leading-[1.6] font-medium opacity-80">
                 Click what you want to track. Simple as that.
               </p>
             </div>
 
-            <div className="border-[3px] border-black bg-white p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-[60px] h-[60px] bg-[#00FF00] opacity-40"></div>
-              <svg className="w-[56px] h-[56px] mb-6 relative z-10" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div className="border-[3px] border-black bg-white p-6 sm:p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[50px] h-[50px] sm:w-[60px] sm:h-[60px] bg-[#00FF00] opacity-40"></div>
+              <svg className="w-[48px] h-[48px] sm:w-[56px] sm:h-[56px] mb-4 sm:mb-6 relative z-10" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M10 28L22 40L46 16" stroke="#000000" strokeWidth="4" strokeLinecap="square"/>
               </svg>
-              <h3 className="text-[20px] font-black uppercase mb-3 leading-tight">Smart Detection</h3>
-              <p className="text-[16px] leading-[1.6] font-medium opacity-80">
+              <h3 className="text-[18px] sm:text-[20px] font-black uppercase mb-2 sm:mb-3 leading-tight">Smart Detection</h3>
+              <p className="text-[15px] sm:text-[16px] leading-[1.6] font-medium opacity-80">
                 Automatically detects lists, counts items, and identifies changes.
               </p>
             </div>
 
-            <div className="border-[3px] border-black bg-white p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-[60px] h-[60px] bg-[#FF3366] opacity-40"></div>
-              <svg className="w-[56px] h-[56px] mb-6 relative z-10" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div className="border-[3px] border-black bg-white p-6 sm:p-8 relative overflow-hidden sm:col-span-2 md:col-span-1">
+              <div className="absolute top-0 right-0 w-[50px] h-[50px] sm:w-[60px] sm:h-[60px] bg-[#FF3366] opacity-40"></div>
+              <svg className="w-[48px] h-[48px] sm:w-[56px] sm:h-[56px] mb-4 sm:mb-6 relative z-10" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="28" cy="28" r="22" stroke="#000000" strokeWidth="3"/>
                 <path d="M28 14L28 28L38 38" stroke="#000000" strokeWidth="3" strokeLinecap="square"/>
               </svg>
-              <h3 className="text-[20px] font-black uppercase mb-3 leading-tight">Flexible Schedule</h3>
-              <p className="text-[16px] leading-[1.6] font-medium opacity-80">
+              <h3 className="text-[18px] sm:text-[20px] font-black uppercase mb-2 sm:mb-3 leading-tight">Flexible Schedule</h3>
+              <p className="text-[15px] sm:text-[16px] leading-[1.6] font-medium opacity-80">
                 Check every hour, day, or custom interval. You decide.
               </p>
             </div>
@@ -221,9 +221,9 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-[3px] border-black mt-auto py-3 bg-white relative z-10">
-        <div className="max-w-[1400px] mx-auto px-6 text-center">
-          <p className="text-[12px] font-bold uppercase tracking-wide opacity-60">
+      <footer className="border-t-[3px] border-black mt-auto py-2.5 sm:py-3 bg-white relative z-10">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 text-center">
+          <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide opacity-60">
             © 2025 AlertFrame
           </p>
         </div>

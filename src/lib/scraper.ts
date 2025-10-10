@@ -1,6 +1,10 @@
 import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
 
+// Import serverless Chrome for Vercel deployment
+// @ts-ignore - chromium package has type issues but works fine
+import chromium from '@sparticuz/chromium';
+
 export interface ScrapeResult {
   htmlContent: string;
   textContent: string;
@@ -11,6 +15,7 @@ export interface ScrapeResult {
 
 /**
  * Scrape a specific element from a webpage
+ * Works in both local development and Vercel serverless production
  */
 export async function scrapeElement(
   url: string,
@@ -19,16 +24,38 @@ export async function scrapeElement(
   let browser;
 
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu',
-      ],
+    // Detect if running on Vercel (serverless)
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isVercel = process.env.VERCEL === '1';
+
+    // Configure Puppeteer based on environment
+    const launchOptions = isProduction && isVercel
+      ? {
+          // Vercel serverless configuration
+          args: chromium.args,
+          defaultViewport: chromium.defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: chromium.headless,
+        }
+      : {
+          // Local development configuration
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu',
+          ],
+        };
+
+    console.log('[Scraper] Launching browser:', {
+      isProduction,
+      isVercel,
+      environment: isProduction && isVercel ? 'vercel-serverless' : 'local',
     });
+
+    browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 

@@ -97,19 +97,19 @@ export default function SignInPage() {
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
       {/* Header */}
       <header className="border-b-[3px] border-black bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 py-3">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
           <div className="flex items-center justify-between">
             <div
-              className="flex items-center gap-1.5 group cursor-pointer"
+              className="flex items-center gap-1 sm:gap-1.5 group cursor-pointer"
               onClick={() => router.push('/')}
             >
               <svg
-                width="28"
-                height="28"
+                width="24"
+                height="24"
                 viewBox="0 0 28 28"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12"
+                className="sm:w-[28px] sm:h-[28px] transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12"
               >
                 <path
                   d="M14 4C11 4 9 6 9 9V13L7 17H21L19 13V9C19 6 17 4 14 4Z"
@@ -126,7 +126,7 @@ export default function SignInPage() {
                 />
                 <circle cx="19" cy="7.5" r="3" fill="#FF3366" stroke="#000000" strokeWidth="2" />
               </svg>
-              <span className="text-[21px] font-black tracking-tight uppercase leading-none">
+              <span className="text-[18px] sm:text-[21px] font-black tracking-tight uppercase leading-none">
                 AlertFrame
               </span>
             </div>
@@ -138,7 +138,7 @@ export default function SignInPage() {
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           {/* Sign In Card */}
-          <div className="border-[3px] border-black bg-white p-8 relative overflow-hidden">
+          <div className="border-[3px] border-black bg-white p-6 sm:p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[100px] h-[100px] bg-[#FFE500] opacity-20"></div>
 
             {/* Logo/Icon */}
@@ -168,12 +168,12 @@ export default function SignInPage() {
             </div>
 
             {/* Title */}
-            <h1 className="text-[32px] font-black uppercase tracking-tight mb-4 text-center relative z-10">
+            <h1 className="text-[28px] sm:text-[32px] font-black uppercase tracking-tight mb-3 sm:mb-4 text-center relative z-10">
               Sign In
             </h1>
 
             {/* Description */}
-            <p className="text-[16px] font-medium mb-8 leading-relaxed text-center opacity-80 relative z-10">
+            <p className="text-[15px] sm:text-[16px] font-medium mb-6 sm:mb-8 leading-relaxed text-center opacity-80 relative z-10">
               Connect your Gmail to start monitoring websites and receive email alerts.
             </p>
 
@@ -237,9 +237,9 @@ export default function SignInPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-[3px] border-black py-3 bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 text-center">
-          <p className="text-[12px] font-bold uppercase tracking-wide opacity-60">
+      <footer className="border-t-[3px] border-black py-2.5 sm:py-3 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 text-center">
+          <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wide opacity-60">
             © 2025 AlertFrame
           </p>
         </div>

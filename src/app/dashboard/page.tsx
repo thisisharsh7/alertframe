@@ -278,29 +278,30 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
       {/* Header */}
       <header className="bg-white border-b-[3px] border-black">
-        <div className="max-w-[1400px] mx-auto px-6 py-2">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-1.5 group cursor-pointer">
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2">
+          <div className="flex items-center justify-between gap-2">
+            <Link href="/" className="flex items-center gap-1 sm:gap-1.5 group cursor-pointer">
+              <svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-[24px] sm:h-[24px] transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12">
                 <path d="M14 4C11 4 9 6 9 9V13L7 17H21L19 13V9C19 6 17 4 14 4Z" fill="#FFE500" stroke="#000000" strokeWidth="2.5" strokeLinejoin="round"/>
                 <path d="M12 17V18C12 19.1 12.9 20 14 20C15.1 20 16 19.1 16 18V17" stroke="#000000" strokeWidth="2.5" strokeLinecap="round"/>
                 <circle cx="19" cy="7.5" r="3" fill="#FF3366" stroke="#000000" strokeWidth="2"/>
               </svg>
-              <span className="text-[18px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
+              <span className="text-[16px] sm:text-[18px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 href="/settings"
-                className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
               >
                 Settings
               </Link>
               <Link
                 href="/"
-                className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-2"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1.5 sm:gap-2"
               >
-                <Plus className="w-4 h-4" />
-                New Alert
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">New Alert</span>
+                <span className="sm:hidden">New</span>
               </Link>
             </div>
           </div>
@@ -309,43 +310,43 @@ export default function DashboardPage() {
 
 
       {/* Main Content */}
-      <main className="max-w-[1200px] mx-auto px-6 py-12 flex-1">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-1">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-[#FFE500] border-[3px] border-black shadow-[6px_6px_0_0_#000]">
-              <Bell className="w-12 h-12 text-black animate-pulse" />
+          <div className="flex items-center justify-center py-16 sm:py-20">
+            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-[#FFE500] border-[3px] border-black shadow-[4px_4px_0_0_#000] sm:shadow-[6px_6px_0_0_#000]">
+              <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-black animate-pulse" />
             </div>
           </div>
         ) : alerts.length === 0 ? (
           /* Empty State */
-          <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-[#FFE500] border-[3px] border-black shadow-[6px_6px_0_0_#000] mb-8">
-              <Bell className="w-12 h-12 text-black" />
+          <div className="text-center py-16 sm:py-20">
+            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-[#FFE500] border-[3px] border-black shadow-[4px_4px_0_0_#000] sm:shadow-[6px_6px_0_0_#000] mb-6 sm:mb-8">
+              <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-black" />
             </div>
-            <h2 className="text-[48px] font-black uppercase mb-4 tracking-tight">
+            <h2 className="text-[32px] sm:text-[40px] md:text-[48px] font-black uppercase mb-3 sm:mb-4 tracking-tight px-4">
               No Alerts Yet
             </h2>
-            <p className="text-[18px] font-medium mb-8 max-w-md mx-auto">
+            <p className="text-[16px] sm:text-[18px] font-medium mb-6 sm:mb-8 max-w-md mx-auto px-4">
               Create your first alert to start monitoring websites for changes.
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-3 px-8 py-4 text-[15px] font-bold uppercase tracking-wide border-[3px] border-black bg-black text-white hover:bg-[#FFE500] hover:text-black transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-[13px] sm:text-[15px] font-bold uppercase tracking-wide border-[3px] border-black bg-black text-white hover:bg-[#FFE500] hover:text-black transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               Create First Alert
             </Link>
           </div>
         ) : (
           /* Alerts Grid */
           <div>
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-[32px] font-black uppercase tracking-tight">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
+              <h2 className="text-[24px] sm:text-[28px] md:text-[32px] font-black uppercase tracking-tight">
                 Your Alerts ({alerts.length})
               </h2>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
@@ -490,8 +491,8 @@ export default function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-[3px] border-black mt-16 py-2 bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 text-center">
+      <footer className="border-t-[3px] border-black mt-12 sm:mt-16 py-2 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 text-center">
           <p className="text-[11px] font-bold uppercase tracking-wide opacity-60">
             © 2025 AlertFrame
           </p>
@@ -501,7 +502,7 @@ export default function DashboardPage() {
       {/* Delete Alert Confirmation Modal */}
       {showDeleteModal && alertToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white border-[3px] border-[#FF3366] max-w-sm w-full p-6">
+          <div className="bg-white border-[3px] border-[#FF3366] max-w-sm w-full p-5 sm:p-6">
             {/* Warning Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-[#FF3366] border-[3px] border-black flex items-center justify-center">
