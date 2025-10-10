@@ -1,12 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signIn } from 'next-auth/react';
 
 export default function Home() {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
+
+  // Reset signing in state when page becomes visible (catches browser back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isSigningIn) {
+        setIsSigningIn(false);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isSigningIn]);
+
+  // Add timeout fallback - reset after 10 seconds if OAuth doesn't complete
+  useEffect(() => {
+    if (isSigningIn) {
+      const timeout = setTimeout(() => {
+        setIsSigningIn(false);
+      }, 10000); // 10 second timeout
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isSigningIn]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,9 +60,27 @@ export default function Home() {
               </svg>
               <span className="text-[21px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
             </div>
-            <button className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]">
-              Sign In
-            </button>
+            {session ? (
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsSigningIn(true);
+                  setTimeout(() => {
+                    signIn('google', { callbackUrl: '/dashboard' }).catch(() => setIsSigningIn(false));
+                  }, 0);
+                }}
+                disabled={isSigningIn}
+                className="px-4 py-2 text-[13px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSigningIn ? 'Signing In...' : 'Sign In'}
+              </button>
+            )}
           </div>
         </div>
       </header>

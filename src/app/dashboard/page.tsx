@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Bell, Plus, Clock, CheckCircle, Pause, Trash2, Play, Loader2, Edit } from 'lucide-react';
+import { useSession, signIn } from 'next-auth/react';
+import { Bell, Plus, Clock, CheckCircle, Pause, Trash2, Play, Edit } from 'lucide-react';
 import Link from 'next/link';
+import BellLoader from '@/components/BellLoader';
 
 interface Alert {
   id: string;
@@ -23,6 +25,7 @@ interface Alert {
 }
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -32,6 +35,9 @@ export default function DashboardPage() {
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFrequencyMinutes, setEditFrequencyMinutes] = useState<number>(600);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [alertToDelete, setAlertToDelete] = useState<Alert | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
     const created = searchParams?.get('created');
@@ -39,12 +45,21 @@ export default function DashboardPage() {
       setJustCreated(created);
       setTimeout(() => setJustCreated(null), 5000);
     }
-    fetchAlerts();
-  }, [searchParams]);
+    if (status === 'authenticated') {
+      fetchAlerts();
+    } else if (status === 'unauthenticated') {
+      setIsLoading(false);
+    }
+  }, [searchParams, status]);
 
   const fetchAlerts = async () => {
     try {
       const response = await fetch('/api/alerts');
+      if (response.status === 401) {
+        // Unauthorized - redirect to sign in
+        router.push('/');
+        return;
+      }
       const data = await response.json();
       setAlerts(data.alerts || []);
     } catch (error) {
@@ -97,19 +112,24 @@ export default function DashboardPage() {
     }
   };
 
-  const deleteAlert = async (alertId: string) => {
-    if (!confirm('Are you sure you want to delete this alert? This action cannot be undone.')) {
-      return;
-    }
+  const confirmDeleteAlert = (alert: Alert) => {
+    setAlertToDelete(alert);
+    setShowDeleteModal(true);
+  };
 
-    setDeletingId(alertId);
+  const deleteAlert = async () => {
+    if (!alertToDelete) return;
+
+    setDeletingId(alertToDelete.id);
     try {
-      const response = await fetch(`/api/alerts/${alertId}`, {
+      const response = await fetch(`/api/alerts/${alertToDelete.id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
         await fetchAlerts();
+        setShowDeleteModal(false);
+        setAlertToDelete(null);
       } else {
         alert('Failed to delete alert');
       }
@@ -144,6 +164,55 @@ export default function DashboardPage() {
     }
   };
 
+  // Show loading state while checking authentication
+  if (status === 'loading' || (status === 'authenticated' && isLoading)) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="text-center">
+          <div className="flex justify-center">
+            <BellLoader />
+          </div>
+          <p className="mt-4 text-[14px] font-bold uppercase tracking-wide">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
+        <div className="max-w-md w-full border-[3px] border-black bg-white p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Bell className="w-10 h-10" />
+            <h1 className="text-[32px] font-black uppercase tracking-tight">Sign In Required</h1>
+          </div>
+          <p className="text-[16px] font-medium mb-6 leading-relaxed">
+            You need to sign in to view your alerts and monitor website changes.
+          </p>
+          <button
+            onClick={() => {
+              setIsSigningIn(true);
+              setTimeout(() => {
+                signIn('google', { callbackUrl: '/dashboard' }).catch(() => setIsSigningIn(false));
+              }, 0);
+            }}
+            disabled={isSigningIn}
+            className="w-full bg-black text-white py-3 px-4 text-[14px] font-bold uppercase tracking-wide border-[3px] border-black hover:bg-[#FFE500] hover:text-black transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSigningIn ? 'Signing In...' : 'Sign in with Google'}
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            className="w-full mt-3 bg-white text-black py-3 px-4 text-[14px] font-bold uppercase tracking-wide border-[3px] border-black hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
       {/* Header */}
@@ -158,13 +227,21 @@ export default function DashboardPage() {
               </svg>
               <span className="text-[18px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
             </Link>
-            <Link
-              href="/"
-              className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Alert
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/settings"
+                className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                Settings
+              </Link>
+              <Link
+                href="/"
+                className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                New Alert
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -319,7 +396,7 @@ export default function DashboardPage() {
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] font-bold uppercase tracking-wide border-[2px] border-black bg-white hover:bg-black hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed active:translate-x-[1px] active:translate-y-[1px]"
                     >
                       {togglingId === alert.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <div className="w-4 h-4 border-[2px] border-current border-t-transparent animate-spin rounded-full"></div>
                       ) : alert.status === 'active' ? (
                         <>
                           <Pause className="w-4 h-4" />
@@ -333,12 +410,12 @@ export default function DashboardPage() {
                       )}
                     </button>
                     <button
-                      onClick={() => deleteAlert(alert.id)}
+                      onClick={() => confirmDeleteAlert(alert)}
                       disabled={deletingId === alert.id}
                       className="px-4 py-2.5 text-[13px] font-bold uppercase tracking-wide border-[2px] border-black bg-[#FF3366] text-white hover:bg-black hover:border-black transition-all disabled:opacity-40 disabled:cursor-not-allowed active:translate-x-[1px] active:translate-y-[1px]"
                     >
                       {deletingId === alert.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <div className="w-4 h-4 border-[2px] border-white border-t-transparent animate-spin rounded-full"></div>
                       ) : (
                         <Trash2 className="w-4 h-4" />
                       )}
@@ -359,6 +436,66 @@ export default function DashboardPage() {
           </p>
         </div>
       </footer>
+
+      {/* Delete Alert Confirmation Modal */}
+      {showDeleteModal && alertToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white border-[3px] border-[#FF3366] max-w-sm w-full p-6">
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-[#FF3366] border-[3px] border-black flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-white" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-[20px] font-black uppercase tracking-tight text-center mb-3 text-[#FF3366]">
+              Delete Alert?
+            </h2>
+
+            {/* Alert Info */}
+            <div className="border-[2px] border-[#FF3366] bg-[#FFF5F7] p-3 mb-4">
+              <p className="text-[12px] font-bold uppercase tracking-wide mb-1 text-[#FF3366]">
+                ⚠️ This cannot be undone!
+              </p>
+              <p className="text-[13px] font-medium truncate">
+                <strong className="font-black">{alertToDelete.title || new URL(alertToDelete.url).hostname}</strong>
+              </p>
+              <p className="text-[11px] font-medium opacity-70 mt-1">
+                All snapshots and change history will be deleted.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setAlertToDelete(null);
+                }}
+                disabled={!!deletingId}
+                className="flex-1 px-4 py-2.5 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteAlert}
+                disabled={!!deletingId}
+                className="flex-1 px-4 py-2.5 text-[12px] font-bold uppercase tracking-wide border-[3px] border-[#FF3366] bg-[#FF3366] text-white hover:bg-black hover:border-black transition-all duration-200 active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deletingId ? (
+                  <>
+                    <div className="w-3 h-3 border-[2px] border-white border-t-transparent animate-spin rounded-full"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  'Yes, Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

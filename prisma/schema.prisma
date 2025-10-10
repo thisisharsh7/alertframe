@@ -7,151 +7,119 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Users
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  image         String?
-  emailVerified DateTime?
-
-  alerts        Alert[]
-  accounts      Account[]
-  sessions      Session[]
-
-  // Subscription
-  stripeCustomerId       String?   @unique
-  stripeSubscriptionId   String?   @unique
-  stripePriceId          String?
-  stripeCurrentPeriodEnd DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("users")
-}
-
-// NextAuth Account
-model Account {
-  id                String  @id @default(cuid())
+model accounts {
+  id                String  @id
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  users             users   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-  @@map("accounts")
 }
 
-// NextAuth Session
-model Session {
-  id           String   @id @default(cuid())
+model alerts {
+  id               String      @id
+  userId           String
+  url              String
+  cssSelector      String
+  elementType      String      @default("single")
+  checkFrequency   Int         @default(10)
+  lastCheckedAt    DateTime?
+  nextCheckAt      DateTime?
+  notifyEmail      Boolean     @default(true)
+  notifySlack      Boolean     @default(false)
+  slackWebhook     String?
+  notifyDiscord    Boolean     @default(false)
+  discordWebhook   String?
+  status           String      @default("active")
+  errorMessage     String?
+  title            String?
+  description      String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime
+  frequencyLabel   String?
+  frequencyMinutes Int         @default(600)
+  users            users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  changes          changes[]
+  snapshots        snapshots[]
+
+  @@index([nextCheckAt])
+  @@index([status])
+  @@index([userId])
+}
+
+model changes {
+  id         String    @id
+  alertId    String
+  changeType String
+  diffData   Json
+  summary    String?
+  detectedAt DateTime  @default(now())
+  notified   Boolean   @default(false)
+  notifiedAt DateTime?
+  viewed     Boolean   @default(false)
+  viewedAt   DateTime?
+  alerts     alerts    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+  @@index([detectedAt])
+}
+
+model sessions {
+  id           String   @id
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sessions")
+  users        users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// NextAuth Verification Token
-model VerificationToken {
+model snapshots {
+  id          String   @id
+  alertId     String
+  htmlContent String
+  textContent String?
+  itemCount   Int?
+  capturedAt  DateTime @default(now())
+  alerts      alerts   @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+  @@index([capturedAt])
+}
+
+model users {
+  id                     String     @id
+  email                  String     @unique
+  name                   String?
+  image                  String?
+  emailVerified          DateTime?
+  stripeCustomerId       String?    @unique
+  stripeSubscriptionId   String?    @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime
+  gmailAccessToken       String?
+  gmailConnected         Boolean    @default(false)
+  gmailEmail             String?
+  gmailRefreshToken      String?
+  gmailTokenExpiry       DateTime?
+  accounts               accounts[]
+  alerts                 alerts[]
+  sessions               sessions[]
+}
+
+model verification_tokens {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verification_tokens")
-}
-
-// Alerts configuration
-model Alert {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Target
-  url         String
-  cssSelector String   // Element to monitor
-  elementType String   @default("single") // 'single', 'list', 'page'
-
-  // Configuration
-  checkFrequency    Int     @default(10) // DEPRECATED: hours (keep for migration)
-  frequencyMinutes  Int     @default(600) // Check frequency in minutes
-  frequencyLabel    String? // Display label (e.g., "Every 2 minutes")
-  lastCheckedAt     DateTime?
-  nextCheckAt       DateTime?
-
-  // Notification
-  notifyEmail    Boolean @default(true)
-  notifySlack    Boolean @default(false)
-  slackWebhook   String?
-  notifyDiscord  Boolean @default(false)
-  discordWebhook String?
-
-  // Status
-  status      String   @default("active") // 'active', 'paused', 'error'
-  errorMessage String?
-
-  // Metadata
-  title       String?  // User-defined name
-  description String?
-
-  snapshots   Snapshot[]
-  changes     Change[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([nextCheckAt])
-  @@map("alerts")
-}
-
-// HTML Snapshots
-model Snapshot {
-  id          String   @id @default(cuid())
-  alertId     String
-  alert       Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
-
-  htmlContent String   @db.Text
-  textContent String?  @db.Text // Plain text for easy comparison
-  itemCount   Int?     // For lists
-
-  capturedAt DateTime @default(now())
-
-  @@index([alertId])
-  @@index([capturedAt])
-  @@map("snapshots")
-}
-
-// Detected Changes
-model Change {
-  id          String   @id @default(cuid())
-  alertId     String
-  alert       Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
-
-  changeType  String   // 'added', 'removed', 'modified'
-  diffData    Json     // Detailed diff
-  summary     String?  // Human-readable summary
-
-  detectedAt  DateTime @default(now())
-  notified    Boolean  @default(false)
-  notifiedAt  DateTime?
-  viewed      Boolean  @default(false)
-  viewedAt    DateTime?
-
-  @@index([alertId])
-  @@index([detectedAt])
-  @@map("changes")
 }

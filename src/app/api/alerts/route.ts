@@ -2,12 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { nanoid } from 'nanoid';
 import { sendAlertCreatedNotification } from '@/lib/email';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route';
+import puppeteer from 'puppeteer';
+import * as cheerio from 'cheerio';
 
-// GET /api/alerts - List all alerts
-export async function GET(request: NextRequest) {
+// GET /api/alerts - List all alerts for authenticated user
+export async function GET() {
   try {
-    // In production, this would be filtered by authenticated user
-    const alerts = await prisma.alert.findMany({
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get user ID from session
+    const user = await prisma.users.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Filter alerts by authenticated user
+    const alerts = await prisma.alerts.findMany({
+      where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
@@ -28,6 +49,12 @@ export async function GET(request: NextRequest) {
 // POST /api/alerts - Create new alert
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       url,
@@ -37,7 +64,6 @@ export async function POST(request: NextRequest) {
       frequencyMinutes,
       frequencyLabel,
       notifyEmail,
-      email,
     } = body;
 
     // Validate required fields
@@ -46,17 +72,6 @@ export async function POST(request: NextRequest) {
         { error: 'URL and CSS selector are required' },
         { status: 400 }
       );
-    }
-
-    // Validate email if notifications are enabled
-    if (notifyEmail && email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return NextResponse.json(
-          { error: 'Invalid email address' },
-          { status: 400 }
-        );
-      }
     }
 
     // Validate frequency
@@ -75,8 +90,18 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const nextCheckAt = new Date(now.getTime() + validFrequency * 60 * 1000);
 
-    // Create alert (without user for MVP - in production this would require auth)
-    const alert = await prisma.alert.create({
+    // Get user from session
+    const user = await prisma.users.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, email: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Create alert for authenticated user
+    const alert = await prisma.alerts.create({
       data: {
         id: nanoid(),
         url,
@@ -88,16 +113,8 @@ export async function POST(request: NextRequest) {
         nextCheckAt,
         notifyEmail: notifyEmail ?? true,
         status: 'active',
-        // In production: userId would come from session
-        user: {
-          connectOrCreate: {
-            where: { email: email || 'demo@alertframe.com' },
-            create: {
-              email: email || 'demo@alertframe.com',
-              name: 'Demo User',
-            },
-          },
-        },
+        userId: user.id,
+        updatedAt: now,
       },
     });
 
@@ -108,8 +125,8 @@ export async function POST(request: NextRequest) {
       console.error('Failed to take initial snapshot:', error);
     }
 
-    // Send confirmation email
-    if (notifyEmail && (email || alert.user?.email)) {
+    // Send confirmation email to authenticated user
+    if (notifyEmail) {
       try {
         await sendAlertCreatedNotification({
           alertId: alert.id,
@@ -118,7 +135,8 @@ export async function POST(request: NextRequest) {
           cssSelector,
           frequencyMinutes: validFrequency,
           frequencyLabel: frequencyLabel || `Every ${validFrequency} minutes`,
-          userEmail: email || alert.user.email,
+          userEmail: user.email,
+          userId: user.id, // Pass userId for OAuth
         });
       } catch (emailError) {
         console.error('Failed to send confirmation email:', emailError);
@@ -143,9 +161,6 @@ export async function POST(request: NextRequest) {
 
 // Helper function to take initial snapshot
 async function takeSnapshot(alertId: string, url: string, cssSelector: string) {
-  const puppeteer = require('puppeteer');
-  const cheerio = require('cheerio');
-
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -166,8 +181,9 @@ async function takeSnapshot(alertId: string, url: string, cssSelector: string) {
       const textContent = element.text() || '';
       const itemCount = element.children().length > 2 ? element.children().length : null;
 
-      await prisma.snapshot.create({
+      await prisma.snapshots.create({
         data: {
+          id: `snap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           alertId,
           htmlContent,
           textContent,

@@ -19,7 +19,7 @@ export async function PATCH(
 
       // If resuming, calculate new nextCheckAt
       if (status === 'active') {
-        const alert = await prisma.alert.findUnique({ where: { id } });
+        const alert = await prisma.alerts.findUnique({ where: { id } });
         const freqMins = frequencyMinutes || alert?.frequencyMinutes || 60;
         updateData.nextCheckAt = new Date(Date.now() + freqMins * 60 * 1000);
       }
@@ -42,7 +42,7 @@ export async function PATCH(
     if (slackWebhook !== undefined) updateData.slackWebhook = slackWebhook;
     if (discordWebhook !== undefined) updateData.discordWebhook = discordWebhook;
 
-    const alert = await prisma.alert.update({
+    const alert = await prisma.alerts.update({
       where: { id },
       data: updateData,
     });
@@ -65,7 +65,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    await prisma.alert.delete({
+    await prisma.alerts.delete({
       where: { id },
     });
 
@@ -87,7 +87,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const alert = await prisma.alert.findUnique({
+    const alert = await prisma.alerts.findUnique({
       where: { id },
       include: {
         _count: {

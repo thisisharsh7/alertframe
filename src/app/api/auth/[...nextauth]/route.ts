@@ -1,0 +1,173 @@
+import NextAuth, { NextAuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import { prisma } from '@/lib/prisma';
+import { storeGmailTokens } from '@/lib/email-oauth';
+
+/**
+ * NextAuth Configuration
+ *
+ * Handles Google OAuth sign-in and Gmail API access
+ * Using JWT sessions with manual user management for better control
+ */
+export const authOptions: NextAuthOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+          scope: [
+            'openid',
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/gmail.send', // Gmail send permission
+          ].join(' '),
+        },
+      },
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log('[NextAuth] signIn callback triggered', {
+        provider: account?.provider,
+        userEmail: user?.email,
+        hasAccessToken: !!account?.access_token,
+        hasRefreshToken: !!account?.refresh_token,
+      });
+
+      if (account?.provider === 'google' && user.email) {
+        try {
+          // Check if user exists
+          let dbUser = await prisma.users.findUnique({
+            where: { email: user.email },
+          });
+
+          // Create or update user
+          if (!dbUser) {
+            console.log('[NextAuth] Creating new user:', user.email);
+            dbUser = await prisma.users.create({
+              data: {
+                id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                email: user.email,
+                name: user.name || null,
+                image: user.image || null,
+                emailVerified: new Date(),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            });
+            console.log('[NextAuth] User created with ID:', dbUser.id);
+          } else {
+            console.log('[NextAuth] Existing user found:', dbUser.id);
+            // Update user info
+            await prisma.users.update({
+              where: { id: dbUser.id },
+              data: {
+                name: user.name || dbUser.name,
+                image: user.image || dbUser.image,
+                updatedAt: new Date(),
+              },
+            });
+          }
+
+          // Store Gmail OAuth tokens
+          if (account.access_token && dbUser.id) {
+            console.log('[NextAuth] Storing Gmail tokens for user:', user.email);
+            await storeGmailTokens(
+              dbUser.id,
+              {
+                access_token: account.access_token,
+                refresh_token: account.refresh_token || undefined,
+                expiry_date: account.expires_at
+                  ? account.expires_at * 1000
+                  : undefined,
+              },
+              user.email
+            );
+            console.log('[NextAuth] Gmail tokens stored successfully');
+          }
+
+          // Store user ID in the user object for JWT
+          user.id = dbUser.id;
+        } catch (error) {
+          console.error('[NextAuth] Error in signIn callback:', error);
+          console.error('[NextAuth] Error details:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+          // Allow signin to proceed even if token storage fails
+          return true;
+        }
+      }
+
+      return true;
+    },
+
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      console.log('[NextAuth] session callback triggered', {
+        userId: token?.id,
+        userEmail: token?.email,
+      });
+
+      if (session.user && token.id) {
+        (session.user as any).id = token.id as string;
+
+        try {
+          // Add Gmail connection status to session
+          const dbUser = await prisma.users.findUnique({
+            where: { id: token.id as string },
+            select: { gmailConnected: true, gmailEmail: true },
+          });
+
+          if (dbUser) {
+            (session.user as any).gmailConnected = dbUser.gmailConnected;
+            (session.user as any).gmailEmail = dbUser.gmailEmail;
+            console.log('[NextAuth] Added Gmail status to session:', {
+              connected: dbUser.gmailConnected,
+              email: dbUser.gmailEmail,
+            });
+          }
+        } catch (error) {
+          console.error('[NextAuth] Failed to fetch Gmail status for session:', error);
+        }
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+  },
+  session: {
+    strategy: 'jwt',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
+  logger: {
+    error(code, metadata) {
+      console.error('[NextAuth Error]', code, metadata);
+    },
+    warn(code) {
+      console.warn('[NextAuth Warn]', code);
+    },
+    debug(code, metadata) {
+      console.log('[NextAuth Debug]', code, metadata);
+    },
+  },
+};
+
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const now = new Date();
 
     // Find alerts that are due for checking
-    const alertsDue = await prisma.alert.findMany({
+    const alertsDue = await prisma.alerts.findMany({
       where: {
         status: 'active',
         OR: [
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         ],
       },
       include: {
-        user: true,
+        users: true,
         snapshots: {
           orderBy: { capturedAt: 'desc' },
           take: 1,
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
 
         // Update alert with error status
         const frequencyMinutes = alert.frequencyMinutes || 60; // Default to 1 hour
-        await prisma.alert.update({
+        await prisma.alerts.update({
           where: { id: alert.id },
           data: {
             status: 'error',
@@ -189,8 +189,9 @@ async function checkAlert(alert: any): Promise<{
   const latestSnapshot = alert.snapshots[0];
 
   // Create new snapshot
-  const newSnapshot = await prisma.snapshot.create({
+  const newSnapshot = await prisma.snapshots.create({
     data: {
+      id: `snap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       alertId: alert.id,
       htmlContent: scrapeResult.htmlContent,
       textContent: scrapeResult.textContent,
@@ -211,7 +212,7 @@ async function checkAlert(alert: any): Promise<{
   console.log(`│  ⏰ Next check in ${frequencyMinutes} minutes: ${nextCheckAt.toLocaleString()}`);
 
   // Update alert
-  await prisma.alert.update({
+  await prisma.alerts.update({
     where: { id: alert.id },
     data: {
       lastCheckedAt: now,
@@ -247,8 +248,9 @@ async function checkAlert(alert: any): Promise<{
     console.log(`│  📝 ${changeResult.summary}`);
 
     // Create change record
-    await prisma.change.create({
+    await prisma.changes.create({
       data: {
+        id: `change_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         alertId: alert.id,
         changeType: changeResult.changeType,
         summary: changeResult.summary || 'Changes detected',
@@ -257,8 +259,8 @@ async function checkAlert(alert: any): Promise<{
     });
 
     // Send email notification if enabled
-    if (alert.notifyEmail && alert.user?.email) {
-      console.log(`│  📧 Sending email to ${alert.user.email}...`);
+    if (alert.notifyEmail && alert.users?.email) {
+      console.log(`│  📧 Sending email to ${alert.users.email}...`);
       try {
         const diffHtml = formatDiffForEmail(changeResult.diffData);
 
@@ -269,18 +271,19 @@ async function checkAlert(alert: any): Promise<{
           changeType: changeResult.changeType,
           summary: changeResult.summary || 'Changes detected',
           diffHtml,
-          userEmail: alert.user.email,
+          userEmail: alert.users.email,
+          userId: alert.users.id, // Pass userId for OAuth
         });
 
         if (emailSent) {
           // Mark change as notified
-          const change = await prisma.change.findFirst({
+          const change = await prisma.changes.findFirst({
             where: { alertId: alert.id },
             orderBy: { detectedAt: 'desc' },
           });
 
           if (change) {
-            await prisma.change.update({
+            await prisma.changes.update({
               where: { id: change.id },
               data: {
                 notified: true,

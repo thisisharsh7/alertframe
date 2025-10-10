@@ -1,8 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/check-alerts",
-      "schedule": "*/10 * * * *"
-    }
-  ]
+  "_comment": "Vercel cron disabled - using cron-job.org for free minute-level precision",
+  "crons": []
 }

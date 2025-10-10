@@ -2,7 +2,8 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
-import { ArrowLeft, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
+import BellLoader from '@/components/BellLoader';
 
 function SelectorContent() {
   const searchParams = useSearchParams();
@@ -142,8 +143,10 @@ function SelectorContent() {
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
                 <div className="text-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-black mx-auto mb-2" />
-                  <p className="text-[13px] font-bold uppercase">Loading page...</p>
+                  <div className="flex justify-center">
+                    <BellLoader />
+                  </div>
+                  <p className="mt-2 text-[13px] font-bold uppercase">Loading page...</p>
                 </div>
               </div>
             )}
@@ -216,7 +219,7 @@ function SelectorContent() {
           {selectedElement && isMobile && (
             <div className="fixed bottom-4 left-4 right-4 bg-[#00FF00] border-[3px] border-black p-4 shadow-[6px_6px_0_0_#000] z-50 animate-in fade-in slide-in-from-bottom-4">
               <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <div className="w-5 h-5 border-[3px] border-black border-t-transparent animate-spin rounded-full"></div>
                 <div className="flex-1">
                   <p className="font-black text-[13px] uppercase">Element Selected!</p>
                   <p className="text-[11px] font-bold opacity-80">Taking you to configuration...</p>
@@ -234,7 +237,7 @@ export default function SelectorPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
-        <Loader2 className="w-8 h-8 animate-spin text-black" />
+        <BellLoader />
       </div>
     }>
       <SelectorContent />
