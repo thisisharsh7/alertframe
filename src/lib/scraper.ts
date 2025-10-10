@@ -33,7 +33,7 @@ export async function scrapeElement(
           args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
           defaultViewport: { width: 1280, height: 800 },
           executablePath: await chromium.executablePath('/tmp/.cache/puppeteer'),
-          headless: chromium.headless,
+          headless: true,
         }
       : {
           // Local development configuration
