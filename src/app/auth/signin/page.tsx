@@ -5,28 +5,72 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import BellLoader from '@/components/BellLoader';
 
+// Map error codes to user-friendly messages
+const getErrorMessage = (errorCode: string): { title: string; details: string; canRetry: boolean } => {
+  const errorMap: Record<string, { title: string; details: string; canRetry: boolean }> = {
+    Configuration: {
+      title: 'Configuration Error',
+      details: 'There was a problem with the authentication setup. This could be due to missing Gmail permissions or a token storage issue. Please try signing in again.',
+      canRetry: true,
+    },
+    AccessDenied: {
+      title: 'Access Denied',
+      details: 'You denied the required Gmail permissions. We need permission to send emails on your behalf to use AlertFrame.',
+      canRetry: true,
+    },
+    OAuthCreateAccount: {
+      title: 'Account Creation Failed',
+      details: 'We encountered an error while setting up your account. Please try again. If the problem persists, contact support.',
+      canRetry: true,
+    },
+    OAuthCallback: {
+      title: 'Authentication Failed',
+      details: 'The authentication callback failed. This might be due to a redirect URI mismatch. Please try again.',
+      canRetry: true,
+    },
+    Default: {
+      title: 'Sign In Failed',
+      details: 'An unexpected error occurred. Please check your internet connection and try again.',
+      canRetry: true,
+    },
+  };
+
+  return errorMap[errorCode] || errorMap.Default;
+};
+
 export default function SignInPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<{ title: string; details: string; canRetry: boolean } | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   useEffect(() => {
     const errorParam = searchParams.get('error');
     if (errorParam) {
-      setError(errorParam);
-      console.error('[SignIn] Error from URL:', errorParam);
+      const errorInfo = getErrorMessage(errorParam);
+      setError(errorInfo);
+      console.error('[SignIn] Error from URL:', errorParam, errorInfo);
     }
   }, [searchParams]);
 
   const handleGoogleSignIn = () => {
+    // Prevent multiple simultaneous sign-in attempts
+    if (isLoading) {
+      console.warn('[SignIn] Sign-in already in progress, ignoring');
+      return;
+    }
+
     // Set loading state synchronously before async operation
     setIsLoading(true);
-    setError('');
+    setError(null);
+    setRetryCount(prev => prev + 1);
+
     console.log('[SignIn] Starting Google OAuth sign-in', {
       callbackUrl,
+      retryCount: retryCount + 1,
     });
 
     // Use setTimeout to ensure state update renders before redirect
@@ -36,7 +80,14 @@ export default function SignInPage() {
         redirect: true,
       }).catch((err) => {
         console.error('[SignIn] Error during sign-in:', err);
-        setError(err instanceof Error ? err.message : 'Failed to sign in');
+
+        // Parse error message for better user feedback
+        const errorMessage = err instanceof Error ? err.message : 'Failed to sign in';
+        setError({
+          title: 'Sign In Failed',
+          details: errorMessage,
+          canRetry: true,
+        });
         setIsLoading(false);
       });
     }, 0);
@@ -129,10 +180,15 @@ export default function SignInPage() {
             {/* Error Message */}
             {error && (
               <div className="border-[3px] border-[#FF3366] bg-[#FFE5E5] p-4 mb-6 relative z-10">
-                <p className="text-[13px] font-bold text-[#FF3366] uppercase tracking-wide mb-1">
-                  Error
+                <p className="text-[13px] font-bold text-[#FF3366] uppercase tracking-wide mb-2">
+                  {error.title}
                 </p>
-                <p className="text-[14px] font-medium">{error}</p>
+                <p className="text-[14px] font-medium mb-3 leading-relaxed">{error.details}</p>
+                {error.canRetry && retryCount > 0 && (
+                  <p className="text-[12px] font-medium opacity-70">
+                    Attempt #{retryCount}
+                  </p>
+                )}
               </div>
             )}
 

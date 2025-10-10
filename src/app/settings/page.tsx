@@ -16,6 +16,8 @@ export default function SettingsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [gmailError, setGmailError] = useState<string>('');
+  const [gmailSuccess, setGmailSuccess] = useState<string>('');
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
@@ -32,13 +34,35 @@ export default function SettingsPage() {
   }, [session, status]);
 
   const handleConnectGmail = () => {
+    if (isSigningIn) {
+      console.warn('[Settings] Gmail connection already in progress');
+      return;
+    }
+
     setIsSigningIn(true);
+    setGmailError('');
+    setGmailSuccess('');
+
     setTimeout(() => {
-      signIn('google', { callbackUrl: '/settings' }).catch(() => setIsSigningIn(false));
+      signIn('google', { callbackUrl: '/settings' }).catch((err) => {
+        console.error('[Settings] Error connecting Gmail:', err);
+        setIsSigningIn(false);
+
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setGmailError(
+          `Failed to connect Gmail: ${errorMessage}. Please check your internet connection and try again.`
+        );
+
+        // Auto-clear error after 10 seconds
+        setTimeout(() => setGmailError(''), 10000);
+      });
     }, 0);
   };
 
   const handleDisconnectGmail = async () => {
+    setGmailError('');
+    setGmailSuccess('');
+
     try {
       const response = await fetch('/api/gmail/disconnect', {
         method: 'POST',
@@ -46,13 +70,25 @@ export default function SettingsPage() {
 
       if (response.ok) {
         setGmailStatus({ connected: false, email: null });
-        alert('Gmail disconnected successfully');
+        setGmailSuccess('Gmail disconnected successfully');
+
+        // Auto-clear success message after 5 seconds
+        setTimeout(() => setGmailSuccess(''), 5000);
       } else {
-        alert('Failed to disconnect Gmail');
+        const data = await response.json().catch(() => ({}));
+        const errorMsg = data.error || data.message || 'Failed to disconnect Gmail';
+        setGmailError(errorMsg);
+
+        // Auto-clear error after 10 seconds
+        setTimeout(() => setGmailError(''), 10000);
       }
     } catch (error) {
       console.error('Error disconnecting Gmail:', error);
-      alert('Failed to disconnect Gmail');
+      const errorMessage = error instanceof Error ? error.message : 'Network error';
+      setGmailError(`Failed to disconnect Gmail: ${errorMessage}. Please try again.`);
+
+      // Auto-clear error after 10 seconds
+      setTimeout(() => setGmailError(''), 10000);
     }
   };
 
@@ -180,6 +216,26 @@ export default function SettingsPage() {
             Connect your Gmail account to send email notifications from your own
             email address. This gives you 500 free emails per day!
           </p>
+
+          {/* Error Message */}
+          {gmailError && (
+            <div className="border-[3px] border-[#FF3366] bg-[#FFE5E5] p-4 mb-4 relative z-10">
+              <p className="text-[13px] font-bold text-[#FF3366] uppercase tracking-wide mb-1">
+                Error
+              </p>
+              <p className="text-[14px] font-medium">{gmailError}</p>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {gmailSuccess && (
+            <div className="border-[3px] border-[#00FF00] bg-[#E5FFE5] p-4 mb-4 relative z-10">
+              <p className="text-[13px] font-bold text-green-800 uppercase tracking-wide mb-1">
+                Success
+              </p>
+              <p className="text-[14px] font-medium text-green-900">{gmailSuccess}</p>
+            </div>
+          )}
 
           <div className="border-[3px] border-black p-4 bg-[#FAFAFA] relative z-10">
             {gmailStatus.connected ? (

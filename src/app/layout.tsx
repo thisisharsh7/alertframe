@@ -16,6 +16,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AlertFrame - Website Change Monitoring",
   description: "Monitor website changes and get instant email notifications",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "512x512" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.svg", type: "image/svg+xml", sizes: "180x180" },
+    ],
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

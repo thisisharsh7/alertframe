@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { prisma } from '@/lib/prisma';
 import { storeGmailTokens } from '@/lib/email-oauth';
+import '@/lib/env-validation'; // Validate environment variables on startup
 
 /**
  * NextAuth Configuration
@@ -36,10 +37,37 @@ export const authOptions: NextAuthOptions = {
         userEmail: user?.email,
         hasAccessToken: !!account?.access_token,
         hasRefreshToken: !!account?.refresh_token,
+        scopes: account?.scope,
       });
 
       if (account?.provider === 'google' && user.email) {
         try {
+          // Validate OAuth scopes - ensure gmail.send permission was granted
+          const requiredScope = 'https://www.googleapis.com/auth/gmail.send';
+          const grantedScopes = account.scope?.split(' ') || [];
+          const hasGmailSendPermission = grantedScopes.includes(requiredScope);
+
+          console.log('[NextAuth] OAuth scope validation:', {
+            grantedScopes,
+            hasGmailSendPermission,
+          });
+
+          if (!hasGmailSendPermission) {
+            console.error('[NextAuth] Gmail send permission not granted');
+            // Block sign-in if required Gmail permission not granted
+            return '/auth/error?error=AccessDenied';
+          }
+
+          // Validate required tokens are present
+          if (!account.access_token) {
+            console.error('[NextAuth] No access token received from Google');
+            return '/auth/error?error=Configuration';
+          }
+
+          if (!account.refresh_token) {
+            console.warn('[NextAuth] No refresh token received (user may have already authorized)');
+          }
+
           // Check if user exists
           let dbUser = await prisma.users.findUnique({
             where: { email: user.email },
@@ -73,21 +101,34 @@ export const authOptions: NextAuthOptions = {
             });
           }
 
-          // Store Gmail OAuth tokens
+          // Store Gmail OAuth tokens - this MUST succeed for sign-in to complete
           if (account.access_token && dbUser.id) {
             console.log('[NextAuth] Storing Gmail tokens for user:', user.email);
-            await storeGmailTokens(
-              dbUser.id,
-              {
-                access_token: account.access_token,
-                refresh_token: account.refresh_token || undefined,
-                expiry_date: account.expires_at
-                  ? account.expires_at * 1000
-                  : undefined,
-              },
-              user.email
-            );
-            console.log('[NextAuth] Gmail tokens stored successfully');
+
+            try {
+              await storeGmailTokens(
+                dbUser.id,
+                {
+                  access_token: account.access_token,
+                  refresh_token: account.refresh_token || undefined,
+                  expiry_date: account.expires_at
+                    ? account.expires_at * 1000
+                    : undefined,
+                },
+                user.email
+              );
+              console.log('[NextAuth] Gmail tokens stored successfully');
+            } catch (tokenError) {
+              console.error('[NextAuth] CRITICAL: Failed to store Gmail tokens:', tokenError);
+              console.error('[NextAuth] Token storage error details:', {
+                message: tokenError instanceof Error ? tokenError.message : 'Unknown error',
+                stack: tokenError instanceof Error ? tokenError.stack : undefined,
+              });
+
+              // If token storage fails, we MUST block sign-in
+              // Otherwise user signs in but can't send emails
+              return '/auth/error?error=Configuration';
+            }
           }
 
           // Store user ID in the user object for JWT
@@ -98,8 +139,9 @@ export const authOptions: NextAuthOptions = {
             message: error instanceof Error ? error.message : 'Unknown error',
             stack: error instanceof Error ? error.stack : undefined,
           });
-          // Allow signin to proceed even if token storage fails
-          return true;
+
+          // Block sign-in on any error - don't allow partial/broken state
+          return '/auth/error?error=OAuthCreateAccount';
         }
       }
 

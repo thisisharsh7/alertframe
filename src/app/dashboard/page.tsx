@@ -178,6 +178,67 @@ export default function DashboardPage() {
     );
   }
 
+  // Handle session error (network issues, expired session, etc.)
+  if (status === 'unauthenticated' && session === null) {
+    // Check if this is an error state vs just not signed in
+    const isSessionError = typeof window !== 'undefined' && window.localStorage.getItem('session_error');
+
+    if (isSessionError) {
+      return (
+        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
+          <div className="max-w-md w-full border-[3px] border-[#FF3366] bg-white p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-[#FF3366] border-[3px] border-black flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h1 className="text-[28px] font-black uppercase tracking-tight">Session Error</h1>
+            </div>
+            <p className="text-[16px] font-medium mb-6 leading-relaxed">
+              Your session encountered an error. This could be due to network issues or an expired session.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  window.localStorage.removeItem('session_error');
+                  setIsSigningIn(true);
+                  setTimeout(() => {
+                    signIn('google', { callbackUrl: '/dashboard' }).catch(() => {
+                      setIsSigningIn(false);
+                      window.localStorage.setItem('session_error', 'true');
+                    });
+                  }, 0);
+                }}
+                disabled={isSigningIn}
+                className="w-full bg-black text-white py-3 px-4 text-[14px] font-bold uppercase tracking-wide border-[3px] border-black hover:bg-[#FFE500] hover:text-black transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSigningIn ? 'Signing In...' : 'Sign In Again'}
+              </button>
+              <button
+                onClick={() => {
+                  window.localStorage.removeItem('session_error');
+                  router.push('/');
+                }}
+                className="w-full bg-white text-black py-3 px-4 text-[14px] font-bold uppercase tracking-wide border-[3px] border-black hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                Back to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
   // Show sign-in prompt if not authenticated
   if (status === 'unauthenticated') {
     return (

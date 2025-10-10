@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#FCD34D"/>
+
+  <!-- Bell icon -->
+  <path d="M256 96C211.817 96 176 131.817 176 176V240.528C176 252.744 171.36 264.56 163 273.736L146.264 291.472C136.672 301.664 143.712 320 158.528 320H353.472C368.288 320 375.328 301.664 365.736 291.472L349 273.736C340.64 264.56 336 252.744 336 240.528V176C336 131.817 300.183 96 256 96Z" fill="white"/>
+
+  <!-- Bell clapper -->
+  <ellipse cx="256" cy="336" rx="32" ry="16" fill="white"/>
+
+  <!-- Bell top hook -->
+  <circle cx="256" cy="80" r="16" fill="white"/>
+  <rect x="248" y="80" width="16" height="24" fill="white"/>
+
+  <!-- Notification dot -->
+  <circle cx="336" cy="144" r="48" fill="#EF4444"/>
+  <circle cx="336" cy="144" r="40" fill="#DC2626"/>
+</svg>

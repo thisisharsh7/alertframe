@@ -87,37 +87,68 @@ async function getGmailClient(userId: string) {
 
   if (needsRefresh) {
     console.log('[Gmail OAuth] Refreshing access token...');
-    try {
-      const { credentials } = await oauth2Client.refreshAccessToken();
-      console.log('[Gmail OAuth] Token refreshed successfully:', {
-        hasNewAccessToken: !!credentials.access_token,
-        hasNewRefreshToken: !!credentials.refresh_token,
-        newExpiry: credentials.expiry_date ? new Date(credentials.expiry_date).toISOString() : 'none'
-      });
 
-      if (credentials.access_token) {
-        // Update database with new tokens
-        await prisma.users.update({
-          where: { id: userId },
-          data: {
-            gmailAccessToken: encrypt(credentials.access_token),
-            gmailTokenExpiry: credentials.expiry_date
-              ? new Date(credentials.expiry_date)
-              : null,
-          },
+    // Retry logic with exponential backoff (3 attempts)
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[Gmail OAuth] Token refresh attempt ${attempt}/${maxRetries}`);
+
+        const { credentials } = await oauth2Client.refreshAccessToken();
+        console.log('[Gmail OAuth] Token refreshed successfully:', {
+          attempt,
+          hasNewAccessToken: !!credentials.access_token,
+          hasNewRefreshToken: !!credentials.refresh_token,
+          newExpiry: credentials.expiry_date ? new Date(credentials.expiry_date).toISOString() : 'none'
         });
 
-        // Update the client
-        oauth2Client.setCredentials(credentials);
-        console.log('[Gmail OAuth] Database updated with new token');
+        if (credentials.access_token) {
+          // Update database with new tokens
+          await prisma.users.update({
+            where: { id: userId },
+            data: {
+              gmailAccessToken: encrypt(credentials.access_token),
+              gmailTokenExpiry: credentials.expiry_date
+                ? new Date(credentials.expiry_date)
+                : null,
+            },
+          });
+
+          // Update the client
+          oauth2Client.setCredentials(credentials);
+          console.log('[Gmail OAuth] Database updated with new token');
+        }
+
+        // Success - break out of retry loop
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        console.error(`[Gmail OAuth] Token refresh attempt ${attempt} failed:`, {
+          attempt,
+          message: lastError.message,
+          willRetry: attempt < maxRetries
+        });
+
+        // If this was the last attempt, throw the error
+        if (attempt === maxRetries) {
+          console.error('[Gmail OAuth] All token refresh attempts failed:', {
+            totalAttempts: maxRetries,
+            finalError: lastError.message,
+            stack: lastError.stack
+          });
+          throw new Error(
+            `Failed to refresh Gmail access token after ${maxRetries} attempts: ${lastError.message}`
+          );
+        }
+
+        // Exponential backoff: wait 1s, 2s, 4s between retries
+        const backoffMs = Math.pow(2, attempt - 1) * 1000;
+        console.log(`[Gmail OAuth] Waiting ${backoffMs}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, backoffMs));
       }
-    } catch (error) {
-      console.error('[Gmail OAuth] Failed to refresh Gmail token:', error);
-      console.error('[Gmail OAuth] Refresh error details:', {
-        message: error instanceof Error ? error.message : 'Unknown',
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      throw new Error('Failed to refresh Gmail access token');
     }
   } else {
     console.log('[Gmail OAuth] Token is still valid, no refresh needed');

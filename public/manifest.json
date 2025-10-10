@@ -1,0 +1,27 @@
+{
+  "name": "AlertFrame - Website Change Monitoring",
+  "short_name": "AlertFrame",
+  "description": "Monitor website changes and get instant email notifications",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FCD34D",
+  "theme_color": "#FCD34D",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    }
+  ]
+}
