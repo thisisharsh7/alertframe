@@ -44,7 +44,7 @@ async function checkAlerts() {
       // Log details if there are changes or errors
       if (data.summary.changesDetected > 0 || data.summary.errors > 0) {
         console.log('\n   Details:');
-        data.details.forEach((detail: any, index: number) => {
+        data.details.forEach((detail: { alertId: string; title?: string; changeDetected?: boolean; error?: string }, index: number) => {
           const icon = detail.error ? '❌' : detail.changeDetected ? '🔔' : '✓';
           console.log(`   ${icon} ${index + 1}. ${detail.title || detail.alertId}`);
           if (detail.changeDetected) {

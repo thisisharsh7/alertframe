@@ -9,12 +9,6 @@ import { encrypt, decrypt } from '@/lib/encryption';
  * Each user sends from their own Gmail (500 emails/day per user)
  */
 
-interface GmailTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiryDate: number;
-}
-
 /**
  * Get Gmail OAuth2 client for a user
  */
@@ -165,9 +159,8 @@ export async function sendEmailViaGmail(params: {
   to: string;
   subject: string;
   html: string;
-  text?: string;
 }): Promise<void> {
-  const { userId, to, subject, html, text } = params;
+  const { userId, to, subject, html } = params;
 
   console.log('[Gmail OAuth] Sending email:', {
     userId,
@@ -231,7 +224,7 @@ export async function sendEmailViaGmail(params: {
     console.error('[Gmail OAuth] ❌ Failed to send email via Gmail:', {
       error: error instanceof Error ? error.message : error,
       errorName: error instanceof Error ? error.name : undefined,
-      errorCode: (error as any)?.code,
+      errorCode: (error as { code?: string })?.code,
       errorStack: error instanceof Error ? error.stack : undefined
     });
     throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -303,16 +296,4 @@ export async function disconnectGmail(userId: string): Promise<void> {
       gmailEmail: null,
     },
   });
-}
-
-/**
- * Strip HTML tags from text (simple fallback)
- */
-function stripHtml(html: string): string {
-  return html
-    .replace(/<style[^>]*>.*?<\/style>/gi, '')
-    .replace(/<script[^>]*>.*?<\/script>/gi, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
 }

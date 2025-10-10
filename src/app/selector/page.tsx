@@ -208,7 +208,7 @@ function SelectorContent() {
 
                 <div className="pt-4 border-t-[2px] border-black">
                   <p className="text-[11px] font-bold opacity-60">
-                    We'll track this element and alert you when it changes.
+                    We&apos;ll track this element and alert you when it changes.
                   </p>
                 </div>
               </div>

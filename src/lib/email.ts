@@ -87,7 +87,7 @@ export async function sendChangeNotification(data: EmailNotificationData): Promi
     console.error('  To:', data.userEmail);
     console.error('  From:', process.env.EMAIL_FROM);
     if (error instanceof Error && 'response' in error) {
-      console.error('  Response:', (error as any).response);
+      console.error('  Response:', (error as { response?: unknown }).response);
     }
     return false;
   }

@@ -11,7 +11,7 @@ export async function PATCH(
     const body = await request.json();
     const { status, frequencyMinutes, frequencyLabel, title, notifyEmail, slackWebhook, discordWebhook } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     // Update status (pause/resume)
     if (status !== undefined) {

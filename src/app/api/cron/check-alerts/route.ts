@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { scrapeElement } from '@/lib/scraper';
 import { detectChanges, formatDiffForEmail } from '@/lib/differ';
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
       checked: 0,
       changes: 0,
       errors: 0,
-      details: [] as any[],
+      details: [] as Array<{ alertId: string; title: string | null; changeDetected?: boolean; error?: string }>,
     };
 
     // Process each alert
@@ -172,7 +173,17 @@ export async function GET(request: NextRequest) {
 /**
  * Check a single alert for changes
  */
-async function checkAlert(alert: any): Promise<{
+async function checkAlert(alert: {
+  id: string;
+  url: string;
+  cssSelector: string;
+  title: string | null;
+  frequencyMinutes: number | null;
+  checkFrequency: number | null;
+  notifyEmail: boolean;
+  users: { id: string; email: string } | null;
+  snapshots: Array<{ htmlContent: string; textContent: string | null; itemCount: number | null }>;
+}): Promise<{
   changeDetected: boolean;
   error?: string;
 }> {
@@ -189,7 +200,7 @@ async function checkAlert(alert: any): Promise<{
   const latestSnapshot = alert.snapshots[0];
 
   // Create new snapshot
-  const newSnapshot = await prisma.snapshots.create({
+  await prisma.snapshots.create({
     data: {
       id: `snap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       alertId: alert.id,
@@ -254,7 +265,7 @@ async function checkAlert(alert: any): Promise<{
         alertId: alert.id,
         changeType: changeResult.changeType,
         summary: changeResult.summary || 'Changes detected',
-        diffData: changeResult.diffData,
+        diffData: changeResult.diffData === null ? Prisma.JsonNull : changeResult.diffData,
       },
     });
 

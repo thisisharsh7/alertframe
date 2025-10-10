@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url');
@@ -12,16 +14,41 @@ export async function GET(request: NextRequest) {
     // Validate URL
     new URL(url);
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu',
-      ],
+    // Detect if running on Vercel (serverless)
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isVercel = process.env.VERCEL === '1';
+
+    // Configure Puppeteer based on environment
+    const launchOptions = isProduction && isVercel
+      ? {
+          // Vercel serverless configuration
+          args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+          defaultViewport: { width: 1280, height: 800 },
+          executablePath: await chromium.executablePath('/tmp/.cache/puppeteer'),
+          headless: chromium.headless,
+        }
+      : {
+          // Local development configuration
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu',
+          ],
+        };
+
+    console.log('[Proxy] Launching browser:', {
+      isProduction,
+      isVercel,
+      environment: isProduction && isVercel ? 'vercel-serverless' : 'local',
     });
+
+    // Use puppeteer-core on Vercel, regular puppeteer locally
+    const browser = isProduction && isVercel
+      ? await puppeteerCore.launch(launchOptions)
+      : await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 

@@ -4,6 +4,9 @@
   "functions": {
     "src/app/api/cron/check-alerts/route.ts": {
       "maxDuration": 300
+    },
+    "src/app/api/proxy/route.ts": {
+      "maxDuration": 60
     }
   }
 }

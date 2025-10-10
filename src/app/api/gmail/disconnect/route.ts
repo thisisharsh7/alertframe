@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { disconnectGmail } from '@/lib/email-oauth';
@@ -7,7 +7,7 @@ import { disconnectGmail } from '@/lib/email-oauth';
  * POST /api/gmail/disconnect
  * Disconnect Gmail OAuth for the authenticated user
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id;
 
     if (!userId) {
       return NextResponse.json(

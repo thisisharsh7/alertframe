@@ -2,7 +2,7 @@
 
 import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import BellLoader from '@/components/BellLoader';
 
 // Map error codes to user-friendly messages
@@ -38,7 +38,7 @@ const getErrorMessage = (errorCode: string): { title: string; details: string; c
   return errorMap[errorCode] || errorMap.Default;
 };
 
-export default function SignInPage() {
+function SignInContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -245,5 +245,19 @@ export default function SignInPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4">
+          <BellLoader />
+        </div>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   );
 }

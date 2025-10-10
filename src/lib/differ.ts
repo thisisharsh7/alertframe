@@ -1,10 +1,15 @@
-import { diffWords, diffLines } from 'diff';
+import { diffWords } from 'diff';
 
 export interface ChangeDetectionResult {
   hasChanged: boolean;
   changeType: 'added' | 'removed' | 'modified' | null;
   summary: string | null;
-  diffData: any;
+  diffData: {
+    type: 'itemCount' | 'text';
+    before?: number;
+    after?: number;
+    diff?: Array<{ value: string; added?: boolean; removed?: boolean }>;
+  } | null;
   itemCountChange?: {
     before: number;
     after: number;
@@ -96,7 +101,12 @@ export function detectChanges(
 /**
  * Format diff for email display
  */
-export function formatDiffForEmail(diffData: any): string {
+export function formatDiffForEmail(diffData: {
+  type: 'itemCount' | 'text';
+  before?: number;
+  after?: number;
+  diff?: Array<{ value: string; added?: boolean; removed?: boolean }>;
+} | null): string {
   if (!diffData) return 'No changes detected';
 
   if (diffData.type === 'itemCount') {
@@ -106,7 +116,7 @@ export function formatDiffForEmail(diffData: any): string {
   if (diffData.type === 'text' && diffData.diff) {
     let html = '<div style="font-family: monospace; white-space: pre-wrap;">';
 
-    diffData.diff.forEach((part: any) => {
+    diffData.diff.forEach((part) => {
       const text = part.value;
       if (part.added) {
         html += `<span style="background-color: #d4edda; color: #155724;">${escapeHtml(text)}</span>`;

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
-import { Bell, Plus, Clock, CheckCircle, Pause, Trash2, Play, Edit } from 'lucide-react';
+import { Bell, Plus, Clock, Pause, Trash2, Play, Edit, Settings } from 'lucide-react';
 import Link from 'next/link';
 import BellLoader from '@/components/BellLoader';
 
@@ -26,11 +26,9 @@ interface Alert {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [justCreated, setJustCreated] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -39,20 +37,7 @@ export default function DashboardPage() {
   const [alertToDelete, setAlertToDelete] = useState<Alert | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  useEffect(() => {
-    const created = searchParams?.get('created');
-    if (created) {
-      setJustCreated(created);
-      setTimeout(() => setJustCreated(null), 5000);
-    }
-    if (status === 'authenticated') {
-      fetchAlerts();
-    } else if (status === 'unauthenticated') {
-      setIsLoading(false);
-    }
-  }, [searchParams, status]);
-
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     try {
       const response = await fetch('/api/alerts');
       if (response.status === 401) {
@@ -67,26 +52,21 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchAlerts();
+    } else if (status === 'unauthenticated') {
+      setIsLoading(false);
+    }
+  }, [status, fetchAlerts]);
 
   // No need for formatFrequency - we display frequencyLabel directly!
 
   const formatDate = (date: Date | null) => {
     if (!date) return 'Never';
     return new Date(date).toLocaleString();
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100';
-      case 'paused':
-        return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100';
-      case 'error':
-        return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100';
-      default:
-        return 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100';
-    }
   };
 
   const toggleAlertStatus = async (alertId: string, currentStatus: string) => {
@@ -291,17 +271,17 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <Link
                 href="/settings"
-                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+                className="px-2 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1.5 sm:gap-2"
               >
-                Settings
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Settings</span>
               </Link>
               <Link
                 href="/"
-                className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1.5 sm:gap-2"
+                className="px-2 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1.5 sm:gap-2"
               >
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">New Alert</span>
-                <span className="sm:hidden">New</span>
               </Link>
             </div>
           </div>

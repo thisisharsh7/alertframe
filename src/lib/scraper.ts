@@ -1,9 +1,7 @@
-import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
-
-// Import serverless Chrome for Vercel deployment
-// @ts-ignore - chromium package has type issues but works fine
 import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
 
 export interface ScrapeResult {
   htmlContent: string;
@@ -32,9 +30,9 @@ export async function scrapeElement(
     const launchOptions = isProduction && isVercel
       ? {
           // Vercel serverless configuration
-          args: chromium.args,
-          defaultViewport: chromium.defaultViewport,
-          executablePath: await chromium.executablePath(),
+          args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+          defaultViewport: { width: 1280, height: 800 },
+          executablePath: await chromium.executablePath('/tmp/.cache/puppeteer'),
           headless: chromium.headless,
         }
       : {
@@ -55,7 +53,10 @@ export async function scrapeElement(
       environment: isProduction && isVercel ? 'vercel-serverless' : 'local',
     });
 
-    browser = await puppeteer.launch(launchOptions);
+    // Use puppeteer-core on Vercel, regular puppeteer locally
+    browser = isProduction && isVercel
+      ? await puppeteerCore.launch(launchOptions)
+      : await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 

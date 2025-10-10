@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       console.log('[NextAuth] signIn callback triggered', {
         provider: account?.provider,
         userEmail: user?.email,
@@ -148,7 +148,7 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       // Initial sign in
       if (user) {
         token.id = user.id;
@@ -164,7 +164,7 @@ export const authOptions: NextAuthOptions = {
       });
 
       if (session.user && token.id) {
-        (session.user as any).id = token.id as string;
+        (session.user as { id?: string }).id = token.id as string;
 
         try {
           // Add Gmail connection status to session
@@ -174,8 +174,8 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (dbUser) {
-            (session.user as any).gmailConnected = dbUser.gmailConnected;
-            (session.user as any).gmailEmail = dbUser.gmailEmail;
+            (session.user as { gmailConnected?: boolean; gmailEmail?: string | null }).gmailConnected = dbUser.gmailConnected;
+            (session.user as { gmailConnected?: boolean; gmailEmail?: string | null }).gmailEmail = dbUser.gmailEmail;
             console.log('[NextAuth] Added Gmail status to session:', {
               connected: dbUser.gmailConnected,
               email: dbUser.gmailEmail,
