@@ -189,6 +189,11 @@ async function checkAlert(alert: {
 }> {
   const now = new Date();
 
+  // Check if user exists
+  if (!alert.users) {
+    throw new Error('Alert has no associated user');
+  }
+
   // Scrape the current state (pass userId to use their API key)
   const scrapeResult = await scrapeElement(alert.url, alert.cssSelector, alert.users.id);
 

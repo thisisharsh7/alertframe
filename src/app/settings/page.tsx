@@ -256,7 +256,7 @@ export default function SettingsPage() {
           <div className="absolute top-0 right-0 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] bg-[#06B6D4] opacity-20"></div>
           <h2 className="text-[20px] sm:text-[24px] font-black uppercase mb-2 tracking-tight relative z-10">OnKernel API Key</h2>
           <p className="text-[13px] sm:text-[14px] font-medium mb-5 sm:mb-6 leading-relaxed opacity-80 relative z-10">
-            Add your own OnKernel API key to power browser automation. Each user pays for their own usage with OnKernel's free tier ($5/month credits).
+            Add your own OnKernel API key to power browser automation. Each user pays for their own usage with OnKernel&apos;s free tier ($5/month credits).
           </p>
 
           {/* Error Message */}
@@ -313,7 +313,7 @@ export default function SettingsPage() {
 
                 {/* Benefits */}
                 <div className="border-[3px] border-black bg-white p-4">
-                  <p className="text-[12px] font-black uppercase tracking-wide mb-3">You're all set:</p>
+                  <p className="text-[12px] font-black uppercase tracking-wide mb-3">You&apos;re all set:</p>
                   <ul className="space-y-2">
                     <li className="flex items-start gap-2 text-[13px] font-medium">
                       <span className="text-[#06B6D4] font-black flex-shrink-0">✓</span>

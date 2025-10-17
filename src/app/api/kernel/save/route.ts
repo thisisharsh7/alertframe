@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
  * Check if user has saved an OnKernel API key
  * GET /api/kernel/save
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
  * Delete user's OnKernel API key
  * DELETE /api/kernel/save
  */
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
