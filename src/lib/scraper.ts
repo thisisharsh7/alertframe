@@ -1,7 +1,8 @@
 import * as cheerio from 'cheerio';
-import chromium from '@sparticuz/chromium'; // v137 - Stable version for Vercel serverless
-import puppeteer from 'puppeteer'; // v23 - For local development
-import puppeteerCore from 'puppeteer-core'; // v24.10 - Matches Chromium 137 for Vercel
+import { Kernel } from '@onkernel/sdk';
+import { chromium } from 'playwright-core';
+import { prisma } from './db';
+import { decrypt } from './encryption';
 
 export interface ScrapeResult {
   htmlContent: string;
@@ -12,62 +13,78 @@ export interface ScrapeResult {
 }
 
 /**
- * Scrape a specific element from a webpage
- * Works in both local development and Vercel serverless production
+ * Scrape a specific element from a webpage using OnKernel
+ * Fast, reliable browser automation powered by OnKernel's managed infrastructure
  */
 export async function scrapeElement(
   url: string,
-  cssSelector: string
+  cssSelector: string,
+  userId?: string
 ): Promise<ScrapeResult> {
   let browser;
 
   try {
-    // Detect if running on Vercel (serverless)
-    const isProduction = process.env.NODE_ENV === 'production';
-    const isVercel = process.env.VERCEL === '1';
+    console.log('[Scraper] Creating OnKernel browser for:', url);
 
-    // Configure Puppeteer based on environment
-    const launchOptions = isProduction && isVercel
-      ? {
-          // Vercel serverless configuration with @sparticuz/chromium v137
-          args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-          defaultViewport: { width: 1280, height: 800 },
-          // IMPORTANT: Call executablePath() without arguments
-          // The full package includes Chromium and manages extraction automatically
-          executablePath: await chromium.executablePath(),
-          headless: true,
-        }
-      : {
-          // Local development configuration
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--disable-gpu',
-          ],
-        };
+    // Get user's API key (NO FALLBACK)
+    if (!userId) {
+      return {
+        htmlContent: '',
+        textContent: '',
+        itemCount: null,
+        success: false,
+        error: 'User ID required for browser automation',
+      };
+    }
 
-    console.log('[Scraper] Launching browser:', {
-      isProduction,
-      isVercel,
-      environment: isProduction && isVercel ? 'vercel-serverless' : 'local',
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { kernelApiKey: true, email: true },
     });
 
-    // Use puppeteer-core on Vercel, regular puppeteer locally
-    browser = isProduction && isVercel
-      ? await puppeteerCore.launch(launchOptions)
-      : await puppeteer.launch(launchOptions);
+    if (!user?.kernelApiKey) {
+      return {
+        htmlContent: '',
+        textContent: '',
+        itemCount: null,
+        success: false,
+        error: 'OnKernel API key required. Please add your API key in Settings to enable monitoring.',
+      };
+    }
+
+    let apiKey: string;
+    try {
+      // Decrypt user's API key
+      apiKey = decrypt(user.kernelApiKey);
+      console.log('[Scraper] Using user API key for:', user.email);
+    } catch (err) {
+      console.error('[Scraper] Failed to decrypt user API key:', err);
+      return {
+        htmlContent: '',
+        textContent: '',
+        itemCount: null,
+        success: false,
+        error: 'Failed to decrypt API key. Please delete and re-add it in Settings.',
+      };
+    }
+
+    // Initialize OnKernel client with user's API key
+    const kernel = new Kernel({ apiKey });
+
+    // Create OnKernel browser (sub-millisecond startup!)
+    const kernelBrowser = await kernel.browsers.create();
+
+    // Connect Playwright to OnKernel browser
+    browser = await chromium.connectOverCDP(kernelBrowser.cdp_ws_url);
 
     const page = await browser.newPage();
 
-    // Set viewport
-    await page.setViewport({ width: 1280, height: 800 });
+    // Set viewport (Playwright API)
+    await page.setViewportSize({ width: 1280, height: 800 });
 
     // Navigate to URL
     await page.goto(url, {
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle',
       timeout: 30000,
     });
 

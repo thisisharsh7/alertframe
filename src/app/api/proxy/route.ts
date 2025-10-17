@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import chromium from '@sparticuz/chromium'; // v137 - Stable version for Vercel serverless
-import puppeteer from 'puppeteer'; // v23 - For local development
-import puppeteerCore from 'puppeteer-core'; // v24.10 - Matches Chromium 137 for Vercel
+import { Kernel } from '@onkernel/sdk';
+import { chromium } from 'playwright-core';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route';
+import { prisma } from '@/lib/db';
+import { decrypt } from '@/lib/encryption';
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url');
@@ -10,56 +13,74 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
   }
 
+  let browser;
+
   try {
     // Validate URL
     new URL(url);
 
-    // Detect if running on Vercel (serverless)
-    const isProduction = process.env.NODE_ENV === 'production';
-    const isVercel = process.env.VERCEL === '1';
+    // Get user session - authentication required
+    const session = await getServerSession(authOptions);
 
-    // Configure Puppeteer based on environment
-    const launchOptions = isProduction && isVercel
-      ? {
-          // Vercel serverless configuration with @sparticuz/chromium v137
-          args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-          defaultViewport: { width: 1280, height: 800 },
-          // IMPORTANT: Call executablePath() without arguments
-          // The full package includes Chromium and manages extraction automatically
-          executablePath: await chromium.executablePath(),
-          headless: true,
-        }
-      : {
-          // Local development configuration
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--disable-gpu',
-          ],
-        };
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
 
-    console.log('[Proxy] Launching browser:', {
-      isProduction,
-      isVercel,
-      environment: isProduction && isVercel ? 'vercel-serverless' : 'local',
+    // Get user's API key (NO FALLBACK)
+    const user = await prisma.users.findUnique({
+      where: { email: session.user.email },
+      select: { kernelApiKey: true },
     });
 
-    // Use puppeteer-core on Vercel, regular puppeteer locally
-    const browser = isProduction && isVercel
-      ? await puppeteerCore.launch(launchOptions)
-      : await puppeteer.launch(launchOptions);
+    if (!user?.kernelApiKey) {
+      return NextResponse.json(
+        {
+          error: 'OnKernel API key required',
+          message: 'Please add your OnKernel API key in Settings to use browser automation. Get your free API key at dashboard.onkernel.com',
+          requiresApiKey: true
+        },
+        { status: 400 }
+      );
+    }
+
+    let apiKey: string;
+    try {
+      // Decrypt user's API key
+      apiKey = decrypt(user.kernelApiKey);
+      console.log('[Proxy] Using user API key for:', session.user.email);
+    } catch (err) {
+      console.error('[Proxy] Failed to decrypt user API key:', err);
+      return NextResponse.json(
+        {
+          error: 'Invalid API key',
+          message: 'Your API key could not be decrypted. Please delete and re-add it in Settings.',
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log('[Proxy] Creating OnKernel browser for:', url);
+
+    // Initialize OnKernel client with user's API key
+    const kernel = new Kernel({ apiKey });
+
+    // Create OnKernel browser (sub-millisecond startup!)
+    const kernelBrowser = await kernel.browsers.create();
+
+    // Connect Playwright to OnKernel browser
+    browser = await chromium.connectOverCDP(kernelBrowser.cdp_ws_url);
 
     const page = await browser.newPage();
 
-    // Set viewport
-    await page.setViewport({ width: 1280, height: 800 });
+    // Set viewport (Playwright API)
+    await page.setViewportSize({ width: 1280, height: 800 });
 
     // Navigate to URL
     await page.goto(url, {
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle',
       timeout: 30000,
     });
 
@@ -298,6 +319,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
+    if (browser) {
+      await browser.close();
+    }
+
     console.error('Proxy error:', error);
     return NextResponse.json(
       { error: 'Failed to load URL', message: error instanceof Error ? error.message : 'Unknown error' },

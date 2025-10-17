@@ -122,7 +122,7 @@ function AuthErrorContent() {
             </button>
             <button
               onClick={() => router.push('/settings')}
-              className="w-full bg-white text-black py-3 px-4 text-[14px] font-bold uppercase tracking-wide border-[3px] border-black hover:bg-[#00FF00] transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+              className="w-full bg-white text-black py-3 px-4 text-[14px] font-bold uppercase tracking-wide border-[3px] border-black hover:bg-[#06B6D4] hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
             >
               Try Again
             </button>

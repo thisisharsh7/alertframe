@@ -111,6 +111,7 @@ model users {
   gmailEmail             String?
   gmailRefreshToken      String?
   gmailTokenExpiry       DateTime?
+  kernelApiKey           String?
   accounts               accounts[]
   alerts                 alerts[]
   sessions               sessions[]

@@ -45,7 +45,7 @@ function SignInContent() {
   const [error, setError] = useState<{ title: string; details: string; canRetry: boolean } | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   useEffect(() => {
     const errorParam = searchParams.get('error');

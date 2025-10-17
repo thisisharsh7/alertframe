@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, signIn } from 'next-auth/react';
-import { Bell, Plus, Clock, Pause, Trash2, Play, Edit, Settings } from 'lucide-react';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { Bell, Plus, Clock, Pause, Trash2, Play, Edit, Settings, Menu, X, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import BellLoader from '@/components/BellLoader';
 
@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [alertToDelete, setAlertToDelete] = useState<Alert | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -61,6 +62,24 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   }, [status, fetchAlerts]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isMenuOpen && !target.closest('.mobile-menu') && !target.closest('.hamburger-btn')) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   // No need for formatFrequency - we display frequencyLabel directly!
 
@@ -192,7 +211,7 @@ export default function DashboardPage() {
                   window.localStorage.removeItem('session_error');
                   setIsSigningIn(true);
                   setTimeout(() => {
-                    signIn('google', { callbackUrl: '/dashboard' }).catch(() => {
+                    signIn('google', { callbackUrl: '/' }).catch(() => {
                       setIsSigningIn(false);
                       window.localStorage.setItem('session_error', 'true');
                     });
@@ -235,7 +254,7 @@ export default function DashboardPage() {
             onClick={() => {
               setIsSigningIn(true);
               setTimeout(() => {
-                signIn('google', { callbackUrl: '/dashboard' }).catch(() => setIsSigningIn(false));
+                signIn('google', { callbackUrl: '/' }).catch(() => setIsSigningIn(false));
               }, 0);
             }}
             disabled={isSigningIn}
@@ -262,27 +281,83 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between gap-2">
             <Link href="/" className="flex items-center gap-1 sm:gap-1.5 group cursor-pointer">
               <svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-[24px] sm:h-[24px] transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-12">
-                <path d="M14 4C11 4 9 6 9 9V13L7 17H21L19 13V9C19 6 17 4 14 4Z" fill="#FFE500" stroke="#000000" strokeWidth="2.5" strokeLinejoin="round"/>
-                <path d="M12 17V18C12 19.1 12.9 20 14 20C15.1 20 16 19.1 16 18V17" stroke="#000000" strokeWidth="2.5" strokeLinecap="round"/>
-                <circle cx="19" cy="7.5" r="3" fill="#FF3366" stroke="#000000" strokeWidth="2"/>
+                <path d="M14 4C11 4 9 6 9 9V13L7 17H21L19 13V9C19 6 17 4 14 4Z" fill="#FFE500" stroke="#000000" strokeWidth="2.5" strokeLinejoin="round" />
+                <path d="M12 17V18C12 19.1 12.9 20 14 20C15.1 20 16 19.1 16 18V17" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="19" cy="7.5" r="3" fill="#FF3366" stroke="#000000" strokeWidth="2" />
               </svg>
               <span className="text-[16px] sm:text-[18px] font-black tracking-tight uppercase leading-none">AlertFrame</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/settings"
-                className="px-2 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1.5 sm:gap-2"
+
+            <div className="relative flex items-center gap-2">
+              {/* Desktop: Show all buttons */}
+              <div className="hidden md:flex items-center gap-2">
+                <Link
+                  href="/settings"
+                  className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Settings</span>
+                </Link>
+                <Link
+                  href="/"
+                  className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>New Alert</span>
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="px-4 py-2 text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-[#FF3366] hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+
+              {/* Mobile: Show hamburger menu */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="hamburger-btn md:hidden px-3 py-2 border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px]"
+                aria-label="Menu"
               >
-                <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </Link>
-              <Link
-                href="/"
-                className="px-2 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-wide border-[3px] border-black bg-white hover:bg-black hover:text-white transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] flex items-center gap-1.5 sm:gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">New Alert</span>
-              </Link>
+                {isMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
+
+              {/* Mobile Menu Dropdown */}
+              {isMenuOpen && (
+                <div className="mobile-menu absolute right-0 top-full mt-2 w-48 border-[3px] border-black bg-white shadow-[4px_4px_0_0_#000] md:hidden z-50">
+                  <Link
+                    href="/settings"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full px-4 py-3 text-[12px] font-bold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-200 flex items-center gap-2 border-b-[2px] border-black"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Settings</span>
+                  </Link>
+                  <Link
+                    href="/"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full px-4 py-3 text-[12px] font-bold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-200 flex items-center gap-2 border-b-[2px] border-black"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>New Alert</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      signOut({ callbackUrl: '/' });
+                    }}
+                    className="w-full px-4 py-3 text-[12px] font-bold uppercase tracking-wide hover:bg-[#FF3366]  hover:text-white transition-all duration-200 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -340,11 +415,10 @@ export default function DashboardPage() {
                       <p className="text-[13px] font-medium opacity-60 truncate mb-3">
                         {alert.url}
                       </p>
-                      <span className={`inline-block px-3 py-1 border-[2px] border-black text-[11px] font-bold uppercase tracking-wide ${
-                        alert.status === 'active' ? 'bg-[#00FF00]' :
-                        alert.status === 'paused' ? 'bg-[#FFE500]' :
-                        'bg-[#FF3366] text-white'
-                      }`}>
+                      <span className={`inline-block px-3 py-1 border-[2px] border-black text-[11px] font-bold uppercase tracking-wide ${alert.status === 'active' ? 'bg-[#06B6D4] text-white' :
+                          alert.status === 'paused' ? 'bg-[#FFE500]' :
+                            'bg-[#FF3366] text-white'
+                        }`}>
                         {alert.status}
                       </span>
                     </div>
@@ -384,7 +458,7 @@ export default function DashboardPage() {
                               const label = select?.selectedOptions[0]?.text || `Every ${editFrequencyMinutes} minutes`;
                               updateFrequency(alert.id, editFrequencyMinutes, label);
                             }}
-                            className="flex-1 px-4 py-2 bg-black text-white text-[13px] font-bold uppercase tracking-wide border-[2px] border-black hover:bg-[#00FF00] hover:text-black transition-all"
+                            className="flex-1 px-4 py-2 bg-black text-white text-[13px] font-bold uppercase tracking-wide border-[2px] border-black hover:bg-[#06B6D4] hover:text-white transition-all"
                           >
                             Save
                           </button>

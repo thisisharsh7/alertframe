@@ -160,7 +160,7 @@ function ConfigureContent() {
                   </code>
                 </div>
                 {elementType === 'list' && (
-                  <span className="px-3 py-1.5 bg-[#00FF00] border-[2px] border-black text-[11px] font-bold uppercase">
+                  <span className="px-3 py-1.5 bg-[#06B6D4] text-white border-[2px] border-black text-[11px] font-bold uppercase">
                     {itemCount} items
                   </span>
                 )}

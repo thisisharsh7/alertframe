@@ -189,8 +189,8 @@ async function checkAlert(alert: {
 }> {
   const now = new Date();
 
-  // Scrape the current state
-  const scrapeResult = await scrapeElement(alert.url, alert.cssSelector);
+  // Scrape the current state (pass userId to use their API key)
+  const scrapeResult = await scrapeElement(alert.url, alert.cssSelector, alert.users.id);
 
   if (!scrapeResult.success) {
     throw new Error(scrapeResult.error || 'Failed to scrape element');

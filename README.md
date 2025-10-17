@@ -10,6 +10,7 @@ AlertFrame is a visual website monitoring tool that lets you click on any elemen
 - PostgreSQL database (Supabase recommended)
 - Google OAuth credentials
 - Gmail API enabled
+- OnKernel API key (free tier available)
 
 ### Clone and Install
 
@@ -51,6 +52,9 @@ ENCRYPTION_KEY="generate-with-openssl-rand-base64-32"
 NODE_ENV="development"
 APP_URL="http://localhost:3000"
 
+# OnKernel - Users add their own keys (in Settings or when prompted)
+# No platform-wide API key needed
+
 # Email Fallback (OPTIONAL)
 RESEND_API_KEY="re_xxxxxxxxxxxx"
 EMAIL_FROM="onboarding@resend.dev"
@@ -68,6 +72,12 @@ Set up Google OAuth:
 3. Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
 4. Enable Gmail API
 5. Copy Client ID and Secret to `.env`
+
+OnKernel Setup (User-Based):
+- Each user adds their own API key (in Settings or when prompted)
+- No platform-wide key needed
+- Users sign up at [OnKernel Dashboard](https://dashboard.onkernel.com)
+- Free tier: $5/month credits (~1,000 page loads)
 
 ### Database Setup
 
@@ -104,14 +114,15 @@ Both processes must be running for alerts to work.
 ## Verify It's Working
 
 1. Open browser: http://localhost:3000
-2. Sign in with your Google account
-3. Create a test alert:
+2. Sign in with your Google account (redirects back to home page)
+3. Add your OnKernel API key when prompted (or in Settings)
+4. Create a test alert:
    - Enter URL: `https://news.ycombinator.com`
    - Click on the first story title
    - Set check frequency to "Every 2 minutes"
    - Click "Create Alert"
-4. Check terminal logs - Worker should show "Running alert check..."
-5. Check your Gmail - You'll receive notifications when changes are detected
+5. Check terminal logs - Worker should show "Running alert check..."
+6. Check your Gmail - You'll receive notifications when changes are detected
 
 ## Available Scripts
 
@@ -130,7 +141,8 @@ npm run db:generate  # Generate Prisma client
 - Next.js 15
 - TypeScript
 - Prisma + PostgreSQL
-- Puppeteer
+- OnKernel (Proxy for iframe loading)
+- Playwright Core
 - NextAuth.js + Gmail API
 - Tailwind CSS
 
@@ -157,3 +169,18 @@ npx prisma generate
 ```bash
 npx prisma studio  # Opens at http://localhost:5555
 ```
+
+### OnKernel API issues
+- Users add their own API keys in Settings or directly in the selector modal
+- Check you have credits at https://dashboard.onkernel.com
+- Free tier includes $5/month credits
+
+## Why OnKernel?
+
+AlertFrame uses OnKernel as a proxy to solve iframe loading issues (CORS) when displaying external websites in the selector.
+
+**User-Based API Keys:**
+- Each user brings their own OnKernel API key
+- Add key in Settings or directly when prompted
+- Free tier: $5/month credits (~1,000 page loads)
+- No credit card required for free tier
