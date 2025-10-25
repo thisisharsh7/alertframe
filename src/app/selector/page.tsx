@@ -75,7 +75,7 @@ function SelectorContent() {
           setApiKeyError(true);
           setIsLoading(false);
         }
-      } catch (_err) {
+      } catch {
         // Iframe will handle the error, this is just for explicit checks
       }
     };

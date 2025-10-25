@@ -68,7 +68,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-[24px] font-black uppercase mb-3">5. Service Limitations</h2>
             <ul className="list-disc ml-6 space-y-2">
-              <li>AlertFrame is provided "as is" without warranties of any kind</li>
+              <li>AlertFrame is provided &quot;as is&quot; without warranties of any kind</li>
               <li>We do not guarantee 100% uptime or alert delivery</li>
               <li>Check frequency depends on your configuration and system availability</li>
               <li>Some websites may block automated monitoring</li>
@@ -80,8 +80,8 @@ export default function TermsOfService() {
             <h2 className="text-[24px] font-black uppercase mb-3">6. Third-Party Services</h2>
             <p className="mb-3">AlertFrame integrates with:</p>
             <ul className="list-disc ml-6 space-y-2">
-              <li><strong>Google OAuth & Gmail API:</strong> Subject to Google's Terms of Service</li>
-              <li><strong>OnKernel:</strong> Subject to OnKernel's Terms of Service and pricing</li>
+              <li><strong>Google OAuth & Gmail API:</strong> Subject to Google&apos;s Terms of Service</li>
+              <li><strong>OnKernel:</strong> Subject to OnKernel&apos;s Terms of Service and pricing</li>
               <li>You are responsible for compliance with all third-party terms</li>
             </ul>
           </section>
@@ -124,7 +124,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-[24px] font-black uppercase mb-3">11. Changes to Terms</h2>
             <p>
-              We reserve the right to modify these Terms of Service at any time. We will notify users of significant changes by updating the "Last Updated" date. Continued use of the service constitutes acceptance of the modified terms.
+              We reserve the right to modify these Terms of Service at any time. We will notify users of significant changes by updating the &quot;Last Updated&quot; date. Continued use of the service constitutes acceptance of the modified terms.
             </p>
           </section>
 
