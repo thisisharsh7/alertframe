@@ -1,3 +1,5 @@
+A demo video -> https://youtu.be/B9nN7qCLkuo?si=a3e72CTXOPFL-cFG
+
 # AlertFrame
 
 AlertFrame is a visual website monitoring tool that lets you click on any element on any website and receive instant email notifications when it changes. Perfect for tracking competitor prices, job postings, news articles, and more.
