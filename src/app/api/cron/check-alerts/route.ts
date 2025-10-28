@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db';
 import { scrapeElement } from '@/lib/scraper';
 import { detectChanges, formatDiffForEmail } from '@/lib/differ';
 import { sendChangeNotification } from '@/lib/email';
+import { sendSlackNotification } from '@/lib/notifications/slack';
+import { sendDiscordNotification } from '@/lib/notifications/discord';
 
 /**
  * Cron endpoint to check all active alerts
@@ -181,6 +183,8 @@ async function checkAlert(alert: {
   frequencyMinutes: number | null;
   checkFrequency: number | null;
   notifyEmail: boolean;
+  slackWebhook: string | null;
+  discordWebhook: string | null;
   users: { id: string; email: string } | null;
   snapshots: Array<{ htmlContent: string; textContent: string | null; itemCount: number | null }>;
 }): Promise<{
@@ -320,6 +324,54 @@ async function checkAlert(alert: {
       console.log(`│  ℹ️  Email notifications disabled for this alert`);
     } else {
       console.log(`│  ⚠️  No email configured for this alert`);
+    }
+
+    // Send Slack notification if webhook configured
+    if (alert.slackWebhook) {
+      console.log(`│  📨 Sending Slack notification...`);
+      try {
+        const slackResult = await sendSlackNotification({
+          webhookUrl: alert.slackWebhook,
+          alertTitle: alert.title || `Monitor ${new URL(alert.url).hostname}`,
+          alertUrl: alert.url,
+          changeType: changeResult.changeType,
+          summary: changeResult.summary || 'Changes detected',
+          dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
+        });
+
+        if (slackResult.success) {
+          console.log(`│  ✅ Slack notification sent successfully`);
+        } else {
+          console.error(`│  ❌ Slack notification failed: ${slackResult.error}`);
+        }
+      } catch (slackError) {
+        const errorMsg = slackError instanceof Error ? slackError.message : 'Unknown error';
+        console.error(`│  ❌ Slack notification failed: ${errorMsg}`);
+      }
+    }
+
+    // Send Discord notification if webhook configured
+    if (alert.discordWebhook) {
+      console.log(`│  📨 Sending Discord notification...`);
+      try {
+        const discordResult = await sendDiscordNotification({
+          webhookUrl: alert.discordWebhook,
+          alertTitle: alert.title || `Monitor ${new URL(alert.url).hostname}`,
+          alertUrl: alert.url,
+          changeType: changeResult.changeType,
+          summary: changeResult.summary || 'Changes detected',
+          dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
+        });
+
+        if (discordResult.success) {
+          console.log(`│  ✅ Discord notification sent successfully`);
+        } else {
+          console.error(`│  ❌ Discord notification failed: ${discordResult.error}`);
+        }
+      } catch (discordError) {
+        const errorMsg = discordError instanceof Error ? discordError.message : 'Unknown error';
+        console.error(`│  ❌ Discord notification failed: ${errorMsg}`);
+      }
     }
 
     return { changeDetected: true };

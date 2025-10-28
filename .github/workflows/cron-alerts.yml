@@ -1,0 +1,60 @@
+name: Check Alerts Cron
+
+on:
+  # Run every 5 minutes
+  schedule:
+    - cron: '*/5 * * * *'
+
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  check-alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Call AlertFrame Cron Endpoint
+        run: |
+          echo "🔍 Calling cron endpoint at $(date)"
+          echo "URL: ${{ secrets.VERCEL_APP_URL || 'https://alertframe.vercel.app' }}/api/cron/check-alerts"
+
+          RESPONSE=$(curl -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "User-Agent: GitHub-Actions-Cron" \
+            -w "\n%{http_code}" \
+            -s \
+            "${{ secrets.VERCEL_APP_URL || 'https://alertframe.vercel.app' }}/api/cron/check-alerts")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo ""
+          echo "📊 Response Code: $HTTP_CODE"
+          echo "📄 Response Body:"
+          echo "$BODY" | jq '.' || echo "$BODY"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo ""
+            echo "❌ Error: Cron endpoint returned $HTTP_CODE"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ Cron executed successfully"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo ""
+          echo "❌ Cron endpoint failed!"
+          echo "📝 Possible causes:"
+          echo "  • Vercel app is down or deploying"
+          echo "  • API endpoint error (check Vercel logs)"
+          echo "  • CRON_SECRET is incorrect"
+          echo "  • Network timeout"
+          echo ""
+          echo "🔧 Next steps:"
+          echo "  1. Check Vercel deployment status"
+          echo "  2. View Vercel logs for errors"
+          echo "  3. Test endpoint manually: curl https://your-app.vercel.app/api/cron/check-alerts"
