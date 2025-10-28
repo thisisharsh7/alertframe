@@ -204,21 +204,11 @@ function ConfigureContent() {
                   paddingRight: '3rem'
                 }}
               >
-                <optgroup label="Minutes" className="font-bold">
-                  <option value="1">Every 1 minute</option>
-                  <option value="2">Every 2 minutes</option>
-                  <option value="5">Every 5 minutes</option>
-                  <option value="10">Every 10 minutes</option>
-                  <option value="20">Every 20 minutes</option>
-                  <option value="30">Every 30 minutes</option>
-                </optgroup>
-                <optgroup label="Hours" className="font-bold">
-                  <option value="60">Every hour</option>
-                  <option value="360">Every 6 hours</option>
-                  <option value="600">Every 10 hours</option>
-                  <option value="1440">Daily</option>
-                  <option value="10080">Weekly</option>
-                </optgroup>
+                <option value="60">Every hour</option>
+                <option value="360">Every 6 hours</option>
+                <option value="600">Every 10 hours</option>
+                <option value="1440">Daily</option>
+                <option value="10080">Weekly</option>
               </select>
               <p className="mt-2 text-[11px] font-bold opacity-60">
                 How often should we check for changes?
