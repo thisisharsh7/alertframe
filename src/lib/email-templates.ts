@@ -170,7 +170,7 @@ export function generateChangeEmailHtml(data: {
               </tr>
               <tr>
                 <td>Detected</td>
-                <td>${new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })}</td>
+                <td>${new Date().toUTCString()}</td>
               </tr>
             </table>
 
