@@ -106,11 +106,6 @@ model users {
   stripeCurrentPeriodEnd DateTime?
   createdAt              DateTime   @default(now())
   updatedAt              DateTime
-  gmailAccessToken       String?
-  gmailConnected         Boolean    @default(false)
-  gmailEmail             String?
-  gmailRefreshToken      String?
-  gmailTokenExpiry       DateTime?
   kernelApiKey           String?
   accounts               accounts[]
   alerts                 alerts[]
