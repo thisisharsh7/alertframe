@@ -56,12 +56,12 @@ export default function SettingsPage() {
 
   const handleSaveKernelKey = async () => {
     if (!kernelApiKey.trim()) {
-      setKernelError('Please enter your OnKernel API key');
+      setKernelError('Please enter your Kernel API key');
       return;
     }
 
     if (!kernelApiKey.startsWith('sk_')) {
-      setKernelError('Invalid OnKernel API key format. Keys should start with "sk_"');
+      setKernelError('Invalid Kernel API key format. Keys should start with "sk_"');
       return;
     }
 
@@ -79,7 +79,7 @@ export default function SettingsPage() {
       if (response.ok) {
         setHasKernelKey(true);
         setKernelApiKey('');
-        setKernelSuccess('OnKernel API key saved successfully!');
+        setKernelSuccess('Kernel API key saved successfully!');
         setTimeout(() => setKernelSuccess(''), 5000);
       } else {
         const data = await response.json();
@@ -106,7 +106,7 @@ export default function SettingsPage() {
 
       if (response.ok) {
         setHasKernelKey(false);
-        setKernelSuccess('OnKernel API key deleted successfully');
+        setKernelSuccess('Kernel API key deleted successfully');
         setTimeout(() => setKernelSuccess(''), 5000);
       } else {
         const data = await response.json();
@@ -254,9 +254,9 @@ export default function SettingsPage() {
         {/* OnKernel API Key Section */}
         <section className="border-[3px] border-black bg-white p-5 sm:p-6 mb-5 sm:mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] bg-[#06B6D4] opacity-20"></div>
-          <h2 className="text-[20px] sm:text-[24px] font-black uppercase mb-2 tracking-tight relative z-10">OnKernel API Key</h2>
+          <h2 className="text-[20px] sm:text-[24px] font-black uppercase mb-2 tracking-tight relative z-10">Kernel API Key</h2>
           <p className="text-[13px] sm:text-[14px] font-medium mb-5 sm:mb-6 leading-relaxed opacity-80 relative z-10">
-            Add your own OnKernel API key to power browser automation. Each user pays for their own usage with OnKernel&apos;s free tier ($5/month credits).
+            Add your own Kernel API key to power browser automation. Each user pays for their own usage with Kernel&apos;s free tier ($5/month credits).
           </p>
 
           {/* Error Message */}
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-black uppercase tracking-wide">API Key Configured</p>
-                      <p className="text-[13px] font-medium opacity-70">Your OnKernel API key is saved and encrypted</p>
+                      <p className="text-[13px] font-medium opacity-70">Your Kernel API key is saved and encrypted</p>
                     </div>
                   </div>
                   <button
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                     </li>
                     <li className="flex items-start gap-2 text-[13px] font-medium">
                       <span className="text-[#06B6D4] font-black flex-shrink-0">✓</span>
-                      <span>$5/month free credits from OnKernel</span>
+                      <span>$5/month free credits from Kernel</span>
                     </li>
                     <li className="flex items-start gap-2 text-[13px] font-medium">
                       <span className="text-[#06B6D4] font-black flex-shrink-0">✓</span>
@@ -354,7 +354,7 @@ export default function SettingsPage() {
                   <div className="flex-1">
                     <p className="text-[14px] font-black uppercase tracking-wide mb-2">No API Key Yet</p>
                     <p className="text-[13px] font-medium mb-4 leading-relaxed opacity-80">
-                      Add your OnKernel API key to enable browser automation. Get your free API key with $5/month credits!
+                      Add your Kernel API key to enable browser automation. Get your free API key with $5/month credits!
                     </p>
 
                     {/* API Key Input */}

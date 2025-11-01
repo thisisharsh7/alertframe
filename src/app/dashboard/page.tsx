@@ -435,21 +435,11 @@ export default function DashboardPage() {
                           onChange={(e) => setEditFrequencyMinutes(parseInt(e.target.value))}
                           className="w-full px-3 py-2 border-[2px] border-black bg-white text-[14px] font-bold uppercase mb-2 cursor-pointer hover:bg-white focus:outline-none focus:shadow-[2px_2px_0_0_#000] transition-all"
                         >
-                          <optgroup label="Minutes">
-                            <option value="1">Every 1 minute</option>
-                            <option value="2">Every 2 minutes</option>
-                            <option value="5">Every 5 minutes</option>
-                            <option value="10">Every 10 minutes</option>
-                            <option value="20">Every 20 minutes</option>
-                            <option value="30">Every 30 minutes</option>
-                          </optgroup>
-                          <optgroup label="Hours">
-                            <option value="60">Every hour</option>
-                            <option value="360">Every 6 hours</option>
-                            <option value="600">Every 10 hours</option>
-                            <option value="1440">Daily</option>
-                            <option value="10080">Weekly</option>
-                          </optgroup>
+                          <option value="60">Every hour</option>
+                          <option value="360">Every 6 hours</option>
+                          <option value="600">Every 10 hours</option>
+                          <option value="1440">Daily</option>
+                          <option value="10080">Weekly</option>
                         </select>
                         <div className="flex gap-2">
                           <button

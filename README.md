@@ -12,7 +12,7 @@ AlertFrame is a visual website monitoring tool that lets you click on any elemen
 - PostgreSQL database (Supabase recommended)
 - Google OAuth credentials
 - Gmail API enabled
-- OnKernel API key (free tier available)
+- Kernel API key (free tier available)
 
 ### Clone and Install
 
@@ -54,7 +54,7 @@ ENCRYPTION_KEY="generate-with-openssl-rand-base64-32"
 NODE_ENV="development"
 APP_URL="http://localhost:3000"
 
-# OnKernel - Users add their own keys (in Settings or when prompted)
+# Kernel - Users add their own keys (in Settings or when prompted)
 # No platform-wide API key needed
 
 # Email Fallback (OPTIONAL)
@@ -75,10 +75,10 @@ Set up Google OAuth:
 4. Enable Gmail API
 5. Copy Client ID and Secret to `.env`
 
-OnKernel Setup (User-Based):
+Kernel Setup (User-Based):
 - Each user adds their own API key (in Settings or when prompted)
 - No platform-wide key needed
-- Users sign up at [OnKernel Dashboard](https://dashboard.onkernel.com)
+- Users sign up at [Kernel Dashboard](https://dashboard.onkernel.com)
 - Free tier: $5/month credits (~1,000 page loads)
 
 ### Database Setup
@@ -117,7 +117,7 @@ Both processes must be running for alerts to work.
 
 1. Open browser: http://localhost:3000
 2. Sign in with your Google account (redirects back to home page)
-3. Add your OnKernel API key when prompted (or in Settings)
+3. Add your Kernel API key when prompted (or in Settings)
 4. Create a test alert:
    - Enter URL: `https://news.ycombinator.com`
    - Click on the first story title
@@ -143,7 +143,7 @@ npm run db:generate  # Generate Prisma client
 - Next.js 15
 - TypeScript
 - Prisma + PostgreSQL
-- OnKernel (Proxy for iframe loading)
+- Kernel (Proxy for iframe loading)
 - Playwright Core
 - NextAuth.js + Gmail API
 - Tailwind CSS
@@ -172,17 +172,17 @@ npx prisma generate
 npx prisma studio  # Opens at http://localhost:5555
 ```
 
-### OnKernel API issues
+### Kernel API issues
 - Users add their own API keys in Settings or directly in the selector modal
 - Check you have credits at https://dashboard.onkernel.com
 - Free tier includes $5/month credits
 
-## Why OnKernel?
+## Why Kernel?
 
-AlertFrame uses OnKernel as a proxy to solve iframe loading issues (CORS) when displaying external websites in the selector.
+AlertFrame uses Kernel as a proxy to solve iframe loading issues (CORS) when displaying external websites in the selector.
 
 **User-Based API Keys:**
-- Each user brings their own OnKernel API key
+- Each user brings their own Kernel API key
 - Add key in Settings or directly when prompted
 - Free tier: $5/month credits (~1,000 page loads)
 - No credit card required for free tier

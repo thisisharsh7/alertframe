@@ -1,9 +1,10 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { ArrowLeft, Check, CheckCircle } from 'lucide-react';
 import BellLoader from '@/components/BellLoader';
+import ConfigureAlertModal from '@/components/ConfigureAlertModal';
 
 function SelectorContent() {
   const searchParams = useSearchParams();
@@ -20,10 +21,15 @@ function SelectorContent() {
     itemCount: number | null;
     elementType: 'single' | 'list';
   } | null>(null);
+  const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [apiKeyError, setApiKeyError] = useState(false);
+  const [canLoadIframe, setCanLoadIframe] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [isSavingApiKey, setIsSavingApiKey] = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
+
+  // Track if API key check has already been performed
+  const hasCheckedApiKey = useRef(false);
 
   useEffect(() => {
     // Check if mobile
@@ -50,23 +56,24 @@ function SelectorContent() {
       if (event.data.type === 'ELEMENT_SELECTED') {
         setSelectedElement(event.data.data);
 
-        // Auto-navigate on mobile
+        // Auto-open modal on mobile
         if (window.innerWidth < 768) {
           setTimeout(() => {
-            const params = new URLSearchParams({
-              url: url,
-              selector: event.data.data.selector,
-              elementType: event.data.data.elementType,
-              itemCount: event.data.data.itemCount?.toString() || '0',
-            });
-            router.push(`/configure?${params.toString()}`);
+            setShowConfigureModal(true);
           }, 300);
         }
       }
     };
 
-    // Check for API key errors
+    // Check for API key errors (only once to prevent duplicate calls)
     const checkProxyError = async () => {
+      // Prevent duplicate API calls
+      if (hasCheckedApiKey.current) {
+        return;
+      }
+
+      hasCheckedApiKey.current = true;
+
       try {
         const response = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`);
         const data = await response.json();
@@ -74,9 +81,14 @@ function SelectorContent() {
         if (data.requiresApiKey || data.error === 'OnKernel API key required') {
           setApiKeyError(true);
           setIsLoading(false);
+          // Don't load iframe - show API key modal instead
+        } else {
+          // No API key error - safe to load iframe
+          setCanLoadIframe(true);
         }
       } catch {
-        // Iframe will handle the error, this is just for explicit checks
+        // Network error or other issue - let iframe try and handle it
+        setCanLoadIframe(true);
       }
     };
 
@@ -90,15 +102,8 @@ function SelectorContent() {
   const handleContinue = () => {
     if (!selectedElement || !url) return;
 
-    // Navigate to configuration page
-    const params = new URLSearchParams({
-      url: url,
-      selector: selectedElement.selector,
-      elementType: selectedElement.elementType,
-      itemCount: selectedElement.itemCount?.toString() || '0',
-    });
-
-    router.push(`/configure?${params.toString()}`);
+    // Open configuration modal
+    setShowConfigureModal(true);
   };
 
   const handleSaveApiKey = async () => {
@@ -159,13 +164,13 @@ function SelectorContent() {
 
           {/* Title */}
           <h2 className="text-[28px] font-black uppercase tracking-tight text-center mb-4">
-            OnKernel API Key Required
+            KERNEL API KEY REQUIRED
           </h2>
 
           {/* Message */}
           <div className="border-[3px] border-black bg-[#FAFAFA] p-6 mb-6">
             <p className="text-[16px] font-medium leading-relaxed mb-4">
-              To display websites in the selector, you need an OnKernel API key. It solves iframe loading issues that prevent external websites from being displayed.
+              To display websites in the selector, you need a Kernel API key. It solves iframe loading issues that prevent external websites from being displayed.
             </p>
 
             <div className="border-t-[3px] border-black pt-4">
@@ -247,7 +252,7 @@ function SelectorContent() {
           <div className="mt-6 border-[3px] border-black bg-[#FFE500] p-4">
             <p className="text-[13px] font-medium leading-relaxed">
               <strong className="font-black uppercase text-[12px] tracking-wide">Quick Setup:</strong>{' '}
-              Sign up at dashboard.onkernel.com, get your API key, then paste it above. Takes less than 2 minutes!
+              Sign up at dashboard.onkernel.com to get your Kernel API key, then paste it above. Takes less than 2 minutes!
             </p>
           </div>
         </div>
@@ -320,12 +325,14 @@ function SelectorContent() {
                 </div>
               </div>
             )}
-            <iframe
-              src={proxyUrl}
-              className="w-full h-full border-0"
-              sandbox="allow-same-origin allow-scripts"
-              title="Page selector"
-            />
+            {canLoadIframe && (
+              <iframe
+                src={proxyUrl}
+                className="w-full h-full border-0"
+                sandbox="allow-same-origin allow-scripts"
+                title="Page selector"
+              />
+            )}
           </div>
 
           {/* Selection Info Panel - Desktop Only */}
@@ -385,20 +392,21 @@ function SelectorContent() {
             </div>
           )}
 
-          {/* Mobile: Show loading toast when navigating */}
-          {selectedElement && isMobile && (
-            <div className="fixed bottom-4 left-4 right-4 bg-[#06B6D4] border-[3px] border-black p-4 shadow-[6px_6px_0_0_#000] z-50 animate-in fade-in slide-in-from-bottom-4">
-              <div className="flex items-center gap-3">
-                <div className="w-5 h-5 border-[3px] border-black border-t-transparent animate-spin rounded-full"></div>
-                <div className="flex-1">
-                  <p className="font-black text-[13px] uppercase">Element Selected!</p>
-                  <p className="text-[11px] font-bold opacity-80">Taking you to configuration...</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Configure Alert Modal */}
+      {showConfigureModal && selectedElement && url && (
+        <ConfigureAlertModal
+          url={url}
+          selectedElement={selectedElement}
+          onClose={() => setShowConfigureModal(false)}
+          onSuccess={() => {
+            setShowConfigureModal(false);
+            setSelectedElement(null);
+          }}
+        />
+      )}
     </div>
   );
 }

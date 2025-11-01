@@ -48,7 +48,7 @@ export async function scrapeElement(
         textContent: '',
         itemCount: null,
         success: false,
-        error: 'OnKernel API key required. Please add your API key in Settings to enable monitoring.',
+        error: 'Kernel API key required. Please add your API key in Settings to enable monitoring.',
       };
     }
 
