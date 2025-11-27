@@ -186,3 +186,11 @@ AlertFrame uses Kernel as a proxy to solve iframe loading issues (CORS) when dis
 - Add key in Settings or directly when prompted
 - Free tier: $5/month credits (~1,000 page loads)
 - No credit card required for free tier
+
+
+Created by [Harsh Kumar](https://github.com/thisisharsh7)
+
+AlertFrame is a visual website monitoring tool that lets you click on any element on any website and receive instant email notifications when it changes. Perfect for tracking competitor prices, job postings, news articles, and more.
+
+⭐ **Star** this repo if you find it useful  
+💖 **Sponsor me** → [GitHub Sponsors](https://github.com/sponsors/thisisharsh7)
